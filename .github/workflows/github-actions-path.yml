@@ -1,7 +1,11 @@
-name: GitHub Actions Demo
-on: [fork]
+name: GitHub Actions Trigger By Specific Path
+on: 
+  push:
+    branches: [main]
+    paths: 
+      - 'specification/common-types'
 jobs:
-  Explore-GitHub-Actions:
+  Explore-GitHub-Actions1:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
