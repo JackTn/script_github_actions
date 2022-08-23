@@ -15,7 +15,7 @@ jobs:
       - name: Checkout files
         uses: actions/checkout@v2
         with:
-          repository: octocat/dst-repsotiory
+          repository: JackTn/script_github_actions
           token: ${{ secrets.ACCESS_TOKEN }}
       - name: Sync files with dst-octocat-repsotiory!
         uses: denis-tingajkin/sync-files@main
