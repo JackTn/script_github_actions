@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
     paths: 
-      - 'specification/common-types'
+      - 'specification/common-types/**'
 jobs:
   Explore-GitHub-Actions1:
     runs-on: ubuntu-latest
