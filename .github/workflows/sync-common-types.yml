@@ -22,9 +22,9 @@ jobs:
         with:
           git-author-email: 'jacktn@github.com'
           git-author-name: 'jacktn'
-          branch-name: 'main'
+          sync-branch-name: 'main'
           allow-files-pattern: 'specification/common-types/**'
-          src-repository: bosstn/script_github_actions
+          sync-repository: 'bosstn/script_github_actions'
 
 
 # 任务
