@@ -1,5 +1,5 @@
 ## Go
-These settings apply only when `--go` is specified on the command line.
+These settings apply only when `--go` is specified on the command line test.
 ``` yaml $(go)
 go:
   license-header: MICROSOFT_MIT_NO_VERSION
