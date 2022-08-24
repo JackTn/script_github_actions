@@ -23,7 +23,6 @@ jobs:
             JackTn/script_github_actions@rpaas
           FILES: |
             sync
-          PULL_REQUEST_BRANCH_NAME: main
           TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 
