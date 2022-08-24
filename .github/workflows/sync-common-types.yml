@@ -28,7 +28,9 @@ jobs:
           GITHUB_TOKEN: ${{secrets.ACCESS_TOKEN}}
           FROM_BRANCH: "main"
           TO_BRANCH: "rpaas"
-
+          REVIEWERS: "jacktn"
+          PULL_REQUEST_TITLE: 'sync common-type from main to rpaas' #Default: sync: {FROM_BRANCH} to {TO_BRANCH}
+          PULL_REQUEST_BODY: '123123' #Default: sync-branches: New code has just landed in {FROM_BRANCH} so let's bring {TO_BRANCH} up to speed!
 
 #jobs:
 #  file_sync:
