@@ -26,7 +26,7 @@ jobs:
           git-author-name: 'jacktn'
           sync-branch-name: 'rpaas'
           allow-files-pattern: 'specification/common-types/**'
-          sync-repository: 'bosstn/script_github_actions'
+          sync-repository: 'JackTn/script_github_actions'
 
 
 # 任务
