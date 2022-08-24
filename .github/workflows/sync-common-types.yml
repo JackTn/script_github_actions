@@ -22,8 +22,8 @@ jobs:
           REPOSITORIES: |
             JackTn/script_github_actions@rpaas
           FILES: |
-             sync/=specification/common-types
-          PULL_REQUEST_BRANCH_NAME: 'main'
+            sync
+          PULL_REQUEST_BRANCH_NAME: main
           TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 
