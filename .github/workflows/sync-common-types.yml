@@ -22,7 +22,7 @@ jobs:
           REPOSITORIES: |
             JackTn/script_github_actions@rpaas
           FILES: |
-            sync
+            specification/common-types
           TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 
