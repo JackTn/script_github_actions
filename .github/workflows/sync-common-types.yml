@@ -11,19 +11,39 @@ on:
     - cron: '* */3 * * *' # 每3小时触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
 
 jobs:
-  file_sync:
+  sync-branches:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Fetching Local Repository
-        uses: actions/checkout@main
-      - name: File Sync
-        uses: kbrashears5/github-action-file-sync@v2.0.0
+    name: Syncing branches
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v1
         with:
-          REPOSITORIES: |
-            JackTn/script_github_actions@rpaas
-          FILES: |
-            specification/common-types
-          TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          node-version: 12
+      - name: Opening pull request
+        id: pull
+        uses: tretuna/sync-branches@1.4.0
+        with:
+          GITHUB_TOKEN: ${{secrets.ACCESS_TOKEN}}
+          FROM_BRANCH: "main"
+          TO_BRANCH: "rpaas"
+
+
+#jobs:
+#  file_sync:
+#    runs-on: ubuntu-latest
+#    steps: 
+#      - name: Fetching Local Repository
+#        uses: actions/checkout@main
+#      - name: File Sync
+#        uses: kbrashears5/github-action-file-sync@v2.0.0
+#        with:
+#          REPOSITORIES: |
+#            JackTn/script_github_actions@rpaas
+#          FILES: |
+#            specification/common-types
+#          TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 
 #jobs:
