@@ -1,0 +1,6 @@
+group:
+  repos: |
+    JackTn/script_github_actions@rpaas
+  files:
+    - source: specification/common-types/
+      dest: specification/common-types/

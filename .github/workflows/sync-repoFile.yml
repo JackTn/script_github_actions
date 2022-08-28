@@ -1,0 +1,37 @@
+name: sync-files
+
+on:
+  push:
+    branches:
+      - main
+    paths: 
+      - 'specification/common-types/**'
+  schedule:
+    - cron: '* */3 * * *' # 每3小时触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
+  workflow_dispatch:
+
+jobs:
+  syncS:
+    name: syncA
+    runs-on: ubuntu-latest
+    steps:
+        - name: test echo
+          run: echo ${{  secrets.GH_PAT  }}
+        - name: Checkout Repository
+          uses: actions/checkout@v2
+        - name: Repo File Sync Action
+          id: sync
+          uses: BetaHuhn/repo-file-sync-action@v1
+          with:
+            ACTIONS_STEP_DEBUG : true
+            GH_PAT: ${{secrets.GH_PAT}}
+            CONFIG_PATH: .github/sync.yml
+            GIT_EMAIL: 347142915@qq.com
+            GIT_USERNAME: JackTn
+            ASSIGNEES: |
+              JackTn
+            COMMIT_PREFIX: Test COMMIT_PREFIX
+            COMMIT_BODY: Test COMMIT_BODY
+            PR_BODY: Test PR_BODY
+            BRANCH_PREFIX: Test_BRANCH_PREFIX
+        - run: echo "new pr is in the ${{ steps.sync.outputs.pull_request_urls }}"
