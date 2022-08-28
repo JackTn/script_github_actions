@@ -1,4 +1,4 @@
-name: sync-files
+name: sync-common-types-files
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
       - 'specification/common-types/**'
   schedule:
     - cron: '* */3 * * *' # 每3小时触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
-  workflow_dispatch:
 
 jobs:
   syncS:
@@ -25,13 +24,12 @@ jobs:
           with:
             ACTIONS_STEP_DEBUG : true
             GH_PAT: ${{secrets.GH_PAT}}
-            CONFIG_PATH: .github/sync.yml
-            GIT_EMAIL: 347142915@qq.com
-            GIT_USERNAME: JackTn
-            ASSIGNEES: |
-              JackTn
-            COMMIT_PREFIX: Test COMMIT_PREFIX
-            COMMIT_BODY: Test COMMIT_BODY
-            PR_BODY: Test PR_BODY
-            BRANCH_PREFIX: Test_BRANCH_PREFIX
+            CONFIG_PATH: ${{env.sync-common-types-files.CONFIG_PATH}}
+            GIT_EMAIL: ${{env.sync-common-types-files.GIT_EMAIL}}
+            GIT_USERNAME: ${{env.sync-common-types-files.GIT_USERNAME}}
+            ASSIGNEES: ${{env.sync-common-types-files.ASSIGNEES}}
+            COMMIT_PREFIX: ${{env.sync-common-types-files.COMMIT_PREFIX}}
+            COMMIT_BODY: ${{env.sync-common-types-files.COMMIT_BODY}}
+            PR_BODY: ${{env.sync-common-types-files.PR_BODY}}
+            BRANCH_PREFIX: ${{env.sync-common-types-files.BRANCH_PREFIX}}
         - run: echo "new pr is in the ${{ steps.sync.outputs.pull_request_urls }}"
