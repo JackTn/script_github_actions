@@ -5,10 +5,10 @@ on:
       - main
     paths: 
       - 'specification/common-types/**'
-  schedule:
-    - cron: '* 11 * * 1' 
-    # https://docs.github.com/cn/actions/using-workflows/events-that-trigger-workflows#schedule
-    # https://crontab.guru/
+  # schedule:
+  #   - cron: '* 11 * * 1' 
+  # https://docs.github.com/cn/actions/using-workflows/events-that-trigger-workflows#schedule
+  # https://crontab.guru/
   workflow_dispatch:
 jobs:
   sync-common-types-files:
