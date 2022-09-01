@@ -1,46 +1,46 @@
-name: Sync Common Types
-
-# 触发条件：在 push 到 main 分支后
-on:
-  push:
-    branches:
-      - main
-    paths: 
-      - 'specification/common-types/**'
-  schedule:
-    - cron: '* */3 * * *' # 每3小时触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
-
-permissions:
-  pull-requests: write
-
-jobs:
-  sync-branches:
-    runs-on: ubuntu-latest
-    name: Syncing branches
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - name: Opening pull request
-        id: pull
-        uses: tretuna/sync-branches@1.4.0
-        with:
-          GITHUB_TOKEN: ${{secrets.ACCESS_TOKEN}}
-          FROM_BRANCH: "main"
-          TO_BRANCH: "rpaas"
-          REVIEWERS: '["JackTn"]'
-          PULL_REQUEST_TITLE: 'sync common-type from main to rpaas' #Default: sync: {FROM_BRANCH} to {TO_BRANCH}
-          PULL_REQUEST_BODY: '123123' #Default: sync-branches: New code has just landed in {FROM_BRANCH} so let's bring {TO_BRANCH} up to speed!
-      - run: echo "new pr is in the ${{ steps.pull.outputs.PULL_REQUEST_URL }}"
-  
-  test-echo:
-    runs-on: ubuntu-latest
-    name: test echo
-    steps:
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+# name: Sync Common Types
+# 
+# # 触发条件：在 push 到 main 分支后
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths: 
+#       - 'specification/common-types/**'
+#   schedule:
+#     - cron: '* */3 * * *' # 每3小时触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
+# 
+# permissions:
+#   pull-requests: write
+# 
+# jobs:
+#   sync-branches:
+#     runs-on: ubuntu-latest
+#     name: Syncing branches
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+#       - name: Set up Node
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: 12
+#       - name: Opening pull request
+#         id: pull
+#         uses: tretuna/sync-branches@1.4.0
+#         with:
+#           GITHUB_TOKEN: ${{secrets.ACCESS_TOKEN}}
+#           FROM_BRANCH: "main"
+#           TO_BRANCH: "rpaas"
+#           REVIEWERS: '["JackTn"]'
+#           PULL_REQUEST_TITLE: 'sync common-type from main to rpaas' #Default: sync: {FROM_BRANCH} to {TO_BRANCH}
+#           PULL_REQUEST_BODY: '123123' #Default: sync-branches: New code has just landed in {FROM_BRANCH} so let's bring {TO_BRANCH} up to speed!
+#       - run: echo "new pr is in the ${{ steps.pull.outputs.PULL_REQUEST_URL }}"
+#   
+#   test-echo:
+#     runs-on: ubuntu-latest
+#     name: test echo
+#     steps:
+#       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
     
 
 #jobs:

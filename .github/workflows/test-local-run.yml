@@ -1,0 +1,9 @@
+ name: GitHub Actions Demo
+ on: [fork]
+ jobs:
+   Explore-GitHub-Actions:
+     runs-on: ubuntu-latest
+     steps:
+       - name: List files in the repository
+         uses: ./
+         run: echo `hello world`

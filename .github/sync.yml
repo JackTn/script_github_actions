@@ -6,10 +6,10 @@
 #       dest: specification/common-types/
 
 
-group:
-  repos: |
-    JackTn/script_github_actions-pr@RPSaaSDev
-    JackTn/script_github_actions-pr@RPSaaSMaster
-  files:
-    - source: specification/common-types/
-      dest: specification/common-types/
+# group:
+#   repos: |
+#     JackTn/script_github_actions-pr@RPSaaSDev
+#     JackTn/script_github_actions-pr@RPSaaSMaster
+#   files:
+#     - source: specification/common-types/
+#       dest: specification/common-types/
