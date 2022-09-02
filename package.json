@@ -5,12 +5,13 @@
   "description": "TypeScript template action",
   "main": "lib/main.js",
   "scripts": {
+    "start": "node dist/index.js",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
-    "all": "npm run build && npm run format && npm run lint && npm run package"
+    "all": "npm run build && npm run format && npm run package"
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,9 @@
   "dependencies": {
     "@actions/core": "^1.2.5",
     "@actions/github": "^4.0.0",
-    "@octokit/webhooks": "^7.11.2"
+    "@octokit/plugin-throttling": "^4.2.0",
+    "@octokit/webhooks": "^7.11.2",
+    "fs-extra": "^10.1.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",

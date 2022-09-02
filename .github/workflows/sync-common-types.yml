@@ -1,143 +1,21 @@
-# name: Sync Common Types
-# 
-# # 触发条件：在 push 到 main 分支后
-# on:
-#   push:
-#     branches:
-#       - main
-#     paths: 
-#       - 'specification/common-types/**'
-#   schedule:
-#     - cron: '* */3 * * *' # 每3小时触发, 对于一些更新不那么频繁的项目可以设置为每天一次, 低碳一点
-# 
-# permissions:
-#   pull-requests: write
-# 
-# jobs:
-#   sync-branches:
-#     runs-on: ubuntu-latest
-#     name: Syncing branches
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#       - name: Set up Node
-#         uses: actions/setup-node@v1
-#         with:
-#           node-version: 12
-#       - name: Opening pull request
-#         id: pull
-#         uses: tretuna/sync-branches@1.4.0
-#         with:
-#           GITHUB_TOKEN: ${{secrets.ACCESS_TOKEN}}
-#           FROM_BRANCH: "main"
-#           TO_BRANCH: "rpaas"
-#           REVIEWERS: '["JackTn"]'
-#           PULL_REQUEST_TITLE: 'sync common-type from main to rpaas' #Default: sync: {FROM_BRANCH} to {TO_BRANCH}
-#           PULL_REQUEST_BODY: '123123' #Default: sync-branches: New code has just landed in {FROM_BRANCH} so let's bring {TO_BRANCH} up to speed!
-#       - run: echo "new pr is in the ${{ steps.pull.outputs.PULL_REQUEST_URL }}"
-#   
-#   test-echo:
-#     runs-on: ubuntu-latest
-#     name: test echo
-#     steps:
-#       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-    
-
-#jobs:
-#  file_sync:
-#    runs-on: ubuntu-latest
-#    steps: 
-#      - name: Fetching Local Repository
-#        uses: actions/checkout@main
-#      - name: File Sync
-#        uses: kbrashears5/github-action-file-sync@v2.0.0
-#        with:
-#          REPOSITORIES: |
-#            JackTn/script_github_actions@rpaas
-#          FILES: |
-#            specification/common-types
-#          TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-
-#jobs:
-#  sync-file:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout files
-#        uses: actions/checkout@v2
-#        with:
-#          repository: JackTn/script_github_actions
-#          token: ${{ secrets.ACCESS_TOKEN }}
-#      - name: Sync files with dst-octocat-repsotiory!
-#        uses: denis-tingajkin/sync-files@main
-#        with:
-#          git-author-email: 'jacktn@github.com'
-#          git-author-name: 'jacktn'
-#          sync-branch-name: 'main'
-#          allow-files-pattern: 'specification/common-types/**'
-#          sync-repository: 'bosstn/script_github_actions'
-
-
-# 任务
-#jobs:
-#  build-and-deploy:
-#    # 服务器环境：最新版 Ubuntu
-#    runs-on: ubuntu-latest
-#    steps:
-#      # 拉取代码
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          persist-credentials: false
-#
-#      # 1、生成静态文件
-#      - name: Build
-#        run: npm install && npm run build
-#
-#      # 2、部署到 GitHub Pages
-#      - name: Deploy
-#        uses: JamesIves/github-pages-deploy-action@releases/v3
-#        with:
-#          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-#          REPOSITORY_NAME: somenzz/somenzz.github.io
-#          BRANCH: master
-#          FOLDER: public
-#          #注意这里的 public 是仓库根目录下的 public，也就是 npm run build 生成静态资源的路径，比如有的人是 `docs/.vuepress/dist`
-#
-#      # 3、同步到 gitee 的仓库
-#      - name: Sync to Gitee
-#        uses: wearerequired/git-mirror-action@master
-#        env:
-#          # 注意在 Settings->Secrets 配置 GITEE_RSA_PRIVATE_KEY
-#          SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
-#        with:
-#          # 注意替换为你的 GitHub 源仓库地址
-#          source-repo: git@github.com:somenzz/somenzz.github.io.git
-#          # 注意替换为你的 Gitee 目标仓库地址
-#          destination-repo: git@gitee.com:somenzz/somenzz.git
-#
-#      # 4、部署到 Gitee Pages
-#      - name: Build Gitee Pages
-#        uses: yanglbme/gitee-pages-action@main
-#        with:
-#          # 注意替换为你的 Gitee 用户名
-#          gitee-username: island
-#          # 注意在 Settings->Secrets 配置 GITEE_PASSWORD
-#          gitee-password: ${{ secrets.GITEE_PASSWORD }}
-#          # 注意替换为你的 Gitee 仓库，仓库名严格区分大小写，请准确填写，否则会出错
-#          gitee-repo: somenzz/somenzz
-#          # 要部署的分支，默认是 master，若是其他分支，则需要指定（指定的分支必须存在）
-#          branch: master
-#
-#      # 5、部署到 xxxx.cn服务器
-#      - name: rsync deployments
-#        uses: burnett01/rsync-deployments@4.1
-#        with:
-#          # 这里是 rsync 的参数 switches: -avzh --delete --exclude="" --include="" --filter=""
-#          switches: -avzh
-#          path: public/
-#          remote_path: /home/ubuntu/public/
-#          remote_host: xxxx.cn
-#          remote_port: 22
-#          remote_user: ubuntu
-#          remote_key: ${{ secrets.MY_UBUNTU_RSA_PRIVATE_KEY }}
+ name: GitHub Actions Trigger By Specific Path 2
+ on: 
+   push:
+     branches: [fork]
+     paths: 
+       - 'specification/common-types/**'
+ jobs:
+   Explore-GitHub-Actions2:
+     runs-on: ubuntu-latest
+     steps:
+       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+       - name: Check out repository code
+         uses: actions/checkout@v3
+       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+       - name: List files in the repository
+         run: |
+           ls ${{ github.workspace }}
+       - run: echo "🍏 This job's status is ${{ job.status }}."
