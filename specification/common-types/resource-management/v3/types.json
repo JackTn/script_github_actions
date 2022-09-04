@@ -1,667 +1,475 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "version": "3.0",
-    "title": "Common types"
-  },
-  "paths": {},
-  "definitions": {
-    "Resource": {
-      "title": "Resource",
-      "description": "Common fields that are returned in the response for all Azure Resource Manager resources",
-      "type": "object",
-      "properties": {
-        "id": {
-          "readOnly": true,
-          "type": "string",
-          "description": "Fully qualified resource ID for the resource. Ex - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}"
-        },
-        "name": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The name of the resource"
-        },
-        "type": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The type of the resource. E.g. \"Microsoft.Compute/virtualMachines\" or \"Microsoft.Storage/storageAccounts\""
-        },
-        "systemData": {
-          "readOnly": true,
-          "type": "object",
-          "description": "Azure Resource Manager metadata containing createdBy and modifiedBy information.",
-          "$ref": "#/definitions/systemData"
-        }
-      },
-      "x-ms-azure-resource": true
-    },
-    "AzureEntityResource": {
-      "x-ms-client-name": "AzureEntityResource",
-      "title": "Entity Resource",
-      "description": "The resource model definition for an Azure Resource Manager resource with an etag.",
-      "type": "object",
-      "properties": {
-        "etag": {
-          "type": "string",
-          "readOnly": true,
-          "description": "Resource Etag."
-        }
-      },
-      "allOf": [
-        {
-          "$ref": "#/definitions/Resource"
-        }
-      ]
-    },
-    "TrackedResource": {
-      "title": "Tracked Resource",
-      "description": "The resource model definition for an Azure Resource Manager tracked top level resource which has 'tags' and a 'location'",
-      "type": "object",
-      "properties": {
-        "tags": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "x-ms-mutability": [
-            "read",
-            "create",
-            "update"
-          ],
-          "description": "Resource tags."
-        },
-        "location": {
-          "type": "string",
-          "x-ms-mutability": [
-            "read",
-            "create"
-          ],
-          "description": "The geo-location where the resource lives"
-        }
-      },
-      "required": [
-        "location"
-      ],
-      "allOf": [
-        {
-          "$ref": "#/definitions/Resource"
-        }
-      ]
-    },
-    "ProxyResource": {
-      "title": "Proxy Resource",
-      "description": "The resource model definition for a Azure Resource Manager proxy resource. It will not have tags and a location",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/definitions/Resource"
-        }
-      ]
-    },
-    "ResourceModelWithAllowedPropertySet": {
-      "description": "The resource model definition containing the full set of allowed properties for a resource. Except properties bag, there cannot be a top level property outside of this set.",
-      "type": "object",
-      "properties": {
-        "managedBy": {
-          "type": "string",
-          "x-ms-mutability": [
-            "read",
-            "create",
-            "update"
-          ],
-          "description": "The fully qualified resource ID of the resource that manages this resource. Indicates if this resource is managed by another Azure resource. If this is present, complete mode deployment will not delete the resource if it is removed from the template since it is managed by another resource."
-        },
-        "kind": {
-          "type": "string",
-          "x-ms-mutability": [
-            "read",
-            "create"
-          ],
-          "description": "Metadata used by portal/tooling/etc to render different UX experiences for resources of the same type; e.g. ApiApps are a kind of Microsoft.Web/sites type.  If supported, the resource provider must validate and persist this value.",
-          "pattern": "^[-\\w\\._,\\(\\)]+$"
-        },
-        "etag": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The etag field is *not* required. If it is provided in the response body, it must also be provided as a header per the normal etag convention.  Entity tags are used for comparing two or more entities from the same requested resource. HTTP/1.1 uses entity tags in the etag (section 14.19), If-Match (section 14.24), If-None-Match (section 14.26), and If-Range (section 14.27) header fields. "
-        },
-        "identity": {
-          "allOf": [
-            {
-              "$ref": "#/definitions/Identity"
-            }
-          ]
-        },
-        "sku": {
-          "allOf": [
-            {
-              "$ref": "#/definitions/Sku"
-            }
-          ]
-        },
-        "plan": {
-          "allOf": [
-            {
-              "$ref": "#/definitions/Plan"
-            }
-          ]
-        }
-      },
-      "allOf": [
-        {
-          "$ref": "#/definitions/TrackedResource"
-        }
-      ],
-      "x-ms-azure-resource": true
-    },
-    "SkuTier": {
-      "type": "string",
-      "enum": [
-        "Free",
-        "Basic",
-        "Standard",
-        "Premium"
-      ],
-      "x-ms-enum": {
-        "name": "SkuTier",
-        "modelAsString": false
-      },
-      "description": "This field is required to be implemented by the Resource Provider if the service has more than one tier, but is not required on a PUT."
-    },
-    "Sku": {
-      "description": "The resource model definition representing SKU",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the SKU. Ex - P3. It is typically a letter+number code"
-        },
-        "tier": {
-          "$ref": "#/definitions/SkuTier"
-        },
-        "size": {
-          "type": "string",
-          "description": "The SKU size. When the name field is the combination of tier and some other value, this would be the standalone code. "
-        },
-        "family": {
-          "type": "string",
-          "description": "If the service has different generations of hardware, for the same SKU, then that can be captured here."
-        },
-        "capacity": {
-          "type": "integer",
-          "format": "int32",
-          "description": "If the SKU supports scale out/in then the capacity integer should be included. If scale out/in is not possible for the resource this may be omitted."
-        }
-      },
-      "required": [
-        "name"
-      ]
-    },
-    "Identity": {
-      "description": "Identity for the resource.",
-      "type": "object",
-      "properties": {
-        "principalId": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The principal ID of resource identity."
-        },
-        "tenantId": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The tenant ID of resource."
-        },
-        "type": {
-          "type": "string",
-          "description": "The identity type.",
-          "enum": [
-            "SystemAssigned"
-          ],
-          "x-ms-enum": {
-            "name": "ResourceIdentityType",
-            "modelAsString": false
-          }
-        }
-      }
-    },
-    "Plan": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "A user defined name of the 3rd Party Artifact that is being procured."
-        },
-        "publisher": {
-          "type": "string",
-          "description": "The publisher of the 3rd Party Artifact that is being bought. E.g. NewRelic"
-        },
-        "product": {
-          "type": "string",
-          "description": "The 3rd Party artifact that is being procured. E.g. NewRelic. Product maps to the OfferID specified for the artifact at the time of Data Market onboarding. "
-        },
-        "promotionCode": {
-          "type": "string",
-          "description": "A publisher provided promotion code as provisioned in Data Market for the said product/artifact."
-        },
-        "version": {
-          "type": "string",
-          "description": "The version of the desired product/artifact."
-        }
-      },
-      "description": "Plan for the resource.",
-      "required": [
-        "name",
-        "publisher",
-        "product"
-      ]
-    },
-    "ErrorDetail": {
-      "description": "The error detail.",
-      "type": "object",
-      "properties": {
-        "code": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The error code."
-        },
-        "message": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The error message."
-        },
-        "target": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The error target."
-        },
-        "details": {
-          "readOnly": true,
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ErrorDetail"
-          },
-          "x-ms-identifiers": [
-            "message",
-            "target"
-          ],
-          "description": "The error details."
-        },
-        "additionalInfo": {
-          "readOnly": true,
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ErrorAdditionalInfo"
-          },
-          "x-ms-identifiers": [],
-          "description": "The error additional info."
-        }
-      }
-    },
-    "ErrorResponse": {
-      "title": "Error response",
-      "description": "Common error response for all Azure Resource Manager APIs to return error details for failed operations. (This also follows the OData error response format.).",
-      "type": "object",
-      "properties": {
-        "error": {
-          "description": "The error object.",
-          "$ref": "#/definitions/ErrorDetail"
-        }
-      }
-    },
-    "ErrorAdditionalInfo": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The additional info type."
-        },
-        "info": {
-          "readOnly": true,
-          "type": "object",
-          "description": "The additional info."
-        }
-      },
-      "description": "The resource management error additional info."
-    },
-    "Operation": {
-      "title": "REST API Operation",
-      "description": "Details of a REST API operation, returned from the Resource Provider Operations API",
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "The name of the operation, as per Resource-Based Access Control (RBAC). Examples: \"Microsoft.Compute/virtualMachines/write\", \"Microsoft.Compute/virtualMachines/capture/action\"",
-          "type": "string",
-          "readOnly": true
-        },
-        "isDataAction": {
-          "description": "Whether the operation applies to data-plane. This is \"true\" for data-plane operations and \"false\" for ARM/control-plane operations.",
-          "type": "boolean",
-          "readOnly": true
-        },
-        "display": {
-          "description": "Localized display information for this particular operation.",
-          "type": "object",
-          "properties": {
-            "provider": {
-              "description": "The localized friendly form of the resource provider name, e.g. \"Microsoft Monitoring Insights\" or \"Microsoft Compute\".",
-              "type": "string",
-              "readOnly": true
-            },
-            "resource": {
-              "description": "The localized friendly name of the resource type related to this operation. E.g. \"Virtual Machines\" or \"Job Schedule Collections\".",
-              "type": "string",
-              "readOnly": true
-            },
-            "operation": {
-              "description": "The concise, localized friendly name for the operation; suitable for dropdowns. E.g. \"Create or Update Virtual Machine\", \"Restart Virtual Machine\".",
-              "type": "string",
-              "readOnly": true
-            },
-            "description": {
-              "description": "The short, localized friendly description of the operation; suitable for tool tips and detailed views.",
-              "type": "string",
-              "readOnly": true
-            }
-          }
-        },
-        "origin": {
-          "description": "The intended executor of the operation; as in Resource Based Access Control (RBAC) and audit logs UX. Default value is \"user,system\"",
-          "type": "string",
-          "readOnly": true,
-          "enum": [
-            "user",
-            "system",
-            "user,system"
-          ],
-          "x-ms-enum": {
-            "name": "Origin",
-            "modelAsString": true
-          }
-        },
-        "actionType": {
-          "description": "Enum. Indicates the action type. \"Internal\" refers to actions that are for internal only APIs.",
-          "type": "string",
-          "readOnly": true,
-          "enum": [
-            "Internal"
-          ],
-          "x-ms-enum": {
-            "name": "ActionType",
-            "modelAsString": true
-          }
-        }
-      }
-    },
-    "OperationListResult": {
-      "description": "A list of REST API operations supported by an Azure Resource Provider. It contains an URL link to get the next set of results.",
-      "type": "object",
-      "properties": {
-        "value": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Operation"
-          },
-          "x-ms-identifiers": [
-            "name"
-          ],
-          "description": "List of operations supported by the resource provider",
-          "readOnly": true
-        },
-        "nextLink": {
-          "type": "string",
-          "description": "URL to get the next set of operation list results (if there are any).",
-          "readOnly": true
-        }
-      }
-    },
-    "OperationStatusResult": {
-      "description": "The current status of an async operation.",
-      "type": "object",
-      "required": [
-        "status"
-      ],
-      "properties": {
-        "id": {
-          "description": "Fully qualified ID for the async operation.",
-          "type": "string"
-        },
-        "name": {
-          "description": "Name of the async operation.",
-          "type": "string"
-        },
-        "status": {
-          "description": "Operation status.",
-          "type": "string"
-        },
-        "percentComplete": {
-          "description": "Percent of the operation that is complete.",
-          "type": "number",
-          "minimum": 0,
-          "maximum": 100
-        },
-        "startTime": {
-          "description": "The start time of the operation.",
-          "type": "string",
-          "format": "date-time"
-        },
-        "endTime": {
-          "description": "The end time of the operation.",
-          "type": "string",
-          "format": "date-time"
-        },
-        "operations": {
-          "description": "The operations list.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/OperationStatusResult"
-          }
-        },
-        "error": {
-          "description": "If present, details of the operation error.",
-          "$ref": "#/definitions/ErrorDetail"
-        }
-      }
-    },
-    "locationData": {
-      "description": "Metadata pertaining to the geographic location of the resource.",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "maxLength": 256,
-          "description": "A canonical name for the geographic or physical location."
-        },
-        "city": {
-          "type": "string",
-          "description": "The city or locality where the resource is located."
-        },
-        "district": {
-          "type": "string",
-          "description": "The district, state, or province where the resource is located."
-        },
-        "countryOrRegion": {
-          "type": "string",
-          "description": "The country or region where the resource is located"
-        }
-      },
-      "required": [
-        "name"
-      ]
-    },
-    "systemData": {
-      "description": "Metadata pertaining to creation and last modification of the resource.",
-      "type": "object",
-      "readOnly": true,
-      "properties": {
-        "createdBy": {
-          "type": "string",
-          "description": "The identity that created the resource."
-        },
-        "createdByType": {
-          "type": "string",
-          "description": "The type of identity that created the resource.",
-          "enum": [
-            "User",
-            "Application",
-            "ManagedIdentity",
-            "Key"
-          ],
-          "x-ms-enum": {
-            "name": "createdByType",
-            "modelAsString": true
-          }
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp of resource creation (UTC)."
-        },
-        "lastModifiedBy": {
-          "type": "string",
-          "description": "The identity that last modified the resource."
-        },
-        "lastModifiedByType": {
-          "type": "string",
-          "description": "The type of identity that last modified the resource.",
-          "enum": [
-            "User",
-            "Application",
-            "ManagedIdentity",
-            "Key"
-          ],
-          "x-ms-enum": {
-            "name": "createdByType",
-            "modelAsString": true
-          }
-        },
-        "lastModifiedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp of resource last modification (UTC)"
-        }
-      }
-    },
-    "encryptionProperties": {
-      "description": "Configuration of key for data encryption",
-      "type": "object",
-      "properties": {
-        "status": {
-          "description": "Indicates whether or not the encryption is enabled for container registry.",
-          "enum": [
-            "enabled",
-            "disabled"
-          ],
-          "type": "string",
-          "x-ms-enum": {
-            "name": "EncryptionStatus",
-            "modelAsString": true
-          }
-        },
-        "keyVaultProperties": {
-          "$ref": "#/definitions/KeyVaultProperties",
-          "description": "Key vault properties."
-        }
-      }
-    },
-    "KeyVaultProperties": {
-      "type": "object",
-      "properties": {
-        "keyIdentifier": {
-          "description": "Key vault uri to access the encryption key.",
-          "type": "string"
-        },
-        "identity": {
-          "description": "The client ID of the identity which will be used to access key vault.",
-          "type": "string"
-        }
-      }
-    },
-    "CheckNameAvailabilityRequest": {
-      "description": "The check availability request body.",
-      "type": "object",
-      "properties": {
-        "name": {
-          "description": "The name of the resource for which availability needs to be checked.",
-          "type": "string"
-        },
-        "type": {
-          "description": "The resource type.",
-          "type": "string"
-        }
-      }
-    },
-    "CheckNameAvailabilityResponse": {
-      "description": "The check availability result.",
-      "type": "object",
-      "properties": {
-        "nameAvailable": {
-          "description": "Indicates if the resource name is available.",
-          "type": "boolean"
-        },
-        "reason": {
-          "description": "The reason why the given name is not available.",
-          "type": "string",
-          "enum": [
-            "Invalid",
-            "AlreadyExists"
-          ],
-          "x-ms-enum": {
-            "name": "CheckNameAvailabilityReason",
-            "modelAsString": true
-          }
-        },
-        "message": {
-          "description": "Detailed reason why the given name is available.",
-          "type": "string"
-        }
-      }
-    }
-  },
-  "parameters": {
-    "SubscriptionIdParameter": {
-      "name": "subscriptionId",
-      "in": "path",
-      "required": true,
-      "type": "string",
-      "description": "The ID of the target subscription.",
-      "minLength": 1
-    },
-    "ApiVersionParameter": {
-      "name": "api-version",
-      "in": "query",
-      "required": true,
-      "type": "string",
-      "description": "The API version to use for this operation.",
-      "minLength": 1
-    },
-    "ResourceGroupNameParameter": {
-      "name": "resourceGroupName",
-      "in": "path",
-      "required": true,
-      "type": "string",
-      "description": "The name of the resource group. The name is case insensitive.",
-      "minLength": 1,
-      "maxLength": 90,
-      "x-ms-parameter-location": "method"
-    },
-    "OperationIdParameter": {
-      "name": "operationId",
-      "in": "path",
-      "required": true,
-      "type": "string",
-      "description": "The ID of an ongoing async operation.",
-      "minLength": 1,
-      "x-ms-parameter-location": "method"
-    },
-    "LocationParameter": {
-      "name": "location",
-      "in": "path",
-      "required": true,
-      "type": "string",
-      "description": "The name of Azure region.",
-      "minLength": 1,
-      "x-ms-parameter-location": "method"
-    }
-  }
-}
+ewogICJzd2FnZ2VyIjogIjIuMCIsCiAgImluZm8iOiB7CiAgICAidmVyc2lv
+biI6ICIzLjAiLAogICAgInRpdGxlIjogIkNvbW1vbiB0eXBlcyIKICB9LAog
+ICJwYXRocyI6IHt9LAogICJkZWZpbml0aW9ucyI6IHsKICAgICJSZXNvdXJj
+ZSI6IHsKICAgICAgInRpdGxlIjogIlJlc291cmNlIiwKICAgICAgImRlc2Ny
+aXB0aW9uIjogIkNvbW1vbiBmaWVsZHMgdGhhdCBhcmUgcmV0dXJuZWQgaW4g
+dGhlIHJlc3BvbnNlIGZvciBhbGwgQXp1cmUgUmVzb3VyY2UgTWFuYWdlciBy
+ZXNvdXJjZXMiLAogICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAicHJv
+cGVydGllcyI6IHsKICAgICAgICAiaWQiOiB7CiAgICAgICAgICAicmVhZE9u
+bHkiOiB0cnVlLAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAg
+ICAgICJkZXNjcmlwdGlvbiI6ICJGdWxseSBxdWFsaWZpZWQgcmVzb3VyY2Ug
+SUQgZm9yIHRoZSByZXNvdXJjZS4gRXggLSAvc3Vic2NyaXB0aW9ucy97c3Vi
+c2NyaXB0aW9uSWR9L3Jlc291cmNlR3JvdXBzL3tyZXNvdXJjZUdyb3VwTmFt
+ZX0vcHJvdmlkZXJzL3tyZXNvdXJjZVByb3ZpZGVyTmFtZXNwYWNlfS97cmVz
+b3VyY2VUeXBlfS97cmVzb3VyY2VOYW1lfSIKICAgICAgICB9LAogICAgICAg
+ICJuYW1lIjogewogICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZSwKICAgICAg
+ICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24i
+OiAiVGhlIG5hbWUgb2YgdGhlIHJlc291cmNlIgogICAgICAgIH0sCiAgICAg
+ICAgInR5cGUiOiB7CiAgICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAogICAg
+ICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJkZXNjcmlwdGlv
+biI6ICJUaGUgdHlwZSBvZiB0aGUgcmVzb3VyY2UuIEUuZy4gXCJNaWNyb3Nv
+ZnQuQ29tcHV0ZS92aXJ0dWFsTWFjaGluZXNcIiBvciBcIk1pY3Jvc29mdC5T
+dG9yYWdlL3N0b3JhZ2VBY2NvdW50c1wiIgogICAgICAgIH0sCiAgICAgICAg
+InN5c3RlbURhdGEiOiB7CiAgICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAog
+ICAgICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgICAgICJkZXNjcmlw
+dGlvbiI6ICJBenVyZSBSZXNvdXJjZSBNYW5hZ2VyIG1ldGFkYXRhIGNvbnRh
+aW5pbmcgY3JlYXRlZEJ5IGFuZCBtb2RpZmllZEJ5IGluZm9ybWF0aW9uLiIs
+CiAgICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL3N5c3RlbURhdGEi
+CiAgICAgICAgfQogICAgICB9LAogICAgICAieC1tcy1henVyZS1yZXNvdXJj
+ZSI6IHRydWUKICAgIH0sCiAgICAiQXp1cmVFbnRpdHlSZXNvdXJjZSI6IHsK
+ICAgICAgIngtbXMtY2xpZW50LW5hbWUiOiAiQXp1cmVFbnRpdHlSZXNvdXJj
+ZSIsCiAgICAgICJ0aXRsZSI6ICJFbnRpdHkgUmVzb3VyY2UiLAogICAgICAi
+ZGVzY3JpcHRpb24iOiAiVGhlIHJlc291cmNlIG1vZGVsIGRlZmluaXRpb24g
+Zm9yIGFuIEF6dXJlIFJlc291cmNlIE1hbmFnZXIgcmVzb3VyY2Ugd2l0aCBh
+biBldGFnLiIsCiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJwcm9w
+ZXJ0aWVzIjogewogICAgICAgICJldGFnIjogewogICAgICAgICAgInR5cGUi
+OiAic3RyaW5nIiwKICAgICAgICAgICJyZWFkT25seSI6IHRydWUsCiAgICAg
+ICAgICAiZGVzY3JpcHRpb24iOiAiUmVzb3VyY2UgRXRhZy4iCiAgICAgICAg
+fQogICAgICB9LAogICAgICAiYWxsT2YiOiBbCiAgICAgICAgewogICAgICAg
+ICAgIiRyZWYiOiAiIy9kZWZpbml0aW9ucy9SZXNvdXJjZSIKICAgICAgICB9
+CiAgICAgIF0KICAgIH0sCiAgICAiVHJhY2tlZFJlc291cmNlIjogewogICAg
+ICAidGl0bGUiOiAiVHJhY2tlZCBSZXNvdXJjZSIsCiAgICAgICJkZXNjcmlw
+dGlvbiI6ICJUaGUgcmVzb3VyY2UgbW9kZWwgZGVmaW5pdGlvbiBmb3IgYW4g
+QXp1cmUgUmVzb3VyY2UgTWFuYWdlciB0cmFja2VkIHRvcCBsZXZlbCByZXNv
+dXJjZSB3aGljaCBoYXMgJ3RhZ3MnIGFuZCBhICdsb2NhdGlvbiciLAogICAg
+ICAidHlwZSI6ICJvYmplY3QiLAogICAgICAicHJvcGVydGllcyI6IHsKICAg
+ICAgICAidGFncyI6IHsKICAgICAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAg
+ICAgICAgICAiYWRkaXRpb25hbFByb3BlcnRpZXMiOiB7CiAgICAgICAgICAg
+ICJ0eXBlIjogInN0cmluZyIKICAgICAgICAgIH0sCiAgICAgICAgICAieC1t
+cy1tdXRhYmlsaXR5IjogWwogICAgICAgICAgICAicmVhZCIsCiAgICAgICAg
+ICAgICJjcmVhdGUiLAogICAgICAgICAgICAidXBkYXRlIgogICAgICAgICAg
+XSwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJSZXNvdXJjZSB0YWdzLiIK
+ICAgICAgICB9LAogICAgICAgICJsb2NhdGlvbiI6IHsKICAgICAgICAgICJ0
+eXBlIjogInN0cmluZyIsCiAgICAgICAgICAieC1tcy1tdXRhYmlsaXR5Ijog
+WwogICAgICAgICAgICAicmVhZCIsCiAgICAgICAgICAgICJjcmVhdGUiCiAg
+ICAgICAgICBdLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBnZW8t
+bG9jYXRpb24gd2hlcmUgdGhlIHJlc291cmNlIGxpdmVzIgogICAgICAgIH0K
+ICAgICAgfSwKICAgICAgInJlcXVpcmVkIjogWwogICAgICAgICJsb2NhdGlv
+biIKICAgICAgXSwKICAgICAgImFsbE9mIjogWwogICAgICAgIHsKICAgICAg
+ICAgICIkcmVmIjogIiMvZGVmaW5pdGlvbnMvUmVzb3VyY2UiCiAgICAgICAg
+fQogICAgICBdCiAgICB9LAogICAgIlByb3h5UmVzb3VyY2UiOiB7CiAgICAg
+ICJ0aXRsZSI6ICJQcm94eSBSZXNvdXJjZSIsCiAgICAgICJkZXNjcmlwdGlv
+biI6ICJUaGUgcmVzb3VyY2UgbW9kZWwgZGVmaW5pdGlvbiBmb3IgYSBBenVy
+ZSBSZXNvdXJjZSBNYW5hZ2VyIHByb3h5IHJlc291cmNlLiBJdCB3aWxsIG5v
+dCBoYXZlIHRhZ3MgYW5kIGEgbG9jYXRpb24iLAogICAgICAidHlwZSI6ICJv
+YmplY3QiLAogICAgICAiYWxsT2YiOiBbCiAgICAgICAgewogICAgICAgICAg
+IiRyZWYiOiAiIy9kZWZpbml0aW9ucy9SZXNvdXJjZSIKICAgICAgICB9CiAg
+ICAgIF0KICAgIH0sCiAgICAiUmVzb3VyY2VNb2RlbFdpdGhBbGxvd2VkUHJv
+cGVydHlTZXQiOiB7CiAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgcmVzb3Vy
+Y2UgbW9kZWwgZGVmaW5pdGlvbiBjb250YWluaW5nIHRoZSBmdWxsIHNldCBv
+ZiBhbGxvd2VkIHByb3BlcnRpZXMgZm9yIGEgcmVzb3VyY2UuIEV4Y2VwdCBw
+cm9wZXJ0aWVzIGJhZywgdGhlcmUgY2Fubm90IGJlIGEgdG9wIGxldmVsIHBy
+b3BlcnR5IG91dHNpZGUgb2YgdGhpcyBzZXQuIiwKICAgICAgInR5cGUiOiAi
+b2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgIm1hbmFn
+ZWRCeSI6IHsKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAg
+ICAieC1tcy1tdXRhYmlsaXR5IjogWwogICAgICAgICAgICAicmVhZCIsCiAg
+ICAgICAgICAgICJjcmVhdGUiLAogICAgICAgICAgICAidXBkYXRlIgogICAg
+ICAgICAgXSwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgZnVsbHkg
+cXVhbGlmaWVkIHJlc291cmNlIElEIG9mIHRoZSByZXNvdXJjZSB0aGF0IG1h
+bmFnZXMgdGhpcyByZXNvdXJjZS4gSW5kaWNhdGVzIGlmIHRoaXMgcmVzb3Vy
+Y2UgaXMgbWFuYWdlZCBieSBhbm90aGVyIEF6dXJlIHJlc291cmNlLiBJZiB0
+aGlzIGlzIHByZXNlbnQsIGNvbXBsZXRlIG1vZGUgZGVwbG95bWVudCB3aWxs
+IG5vdCBkZWxldGUgdGhlIHJlc291cmNlIGlmIGl0IGlzIHJlbW92ZWQgZnJv
+bSB0aGUgdGVtcGxhdGUgc2luY2UgaXQgaXMgbWFuYWdlZCBieSBhbm90aGVy
+IHJlc291cmNlLiIKICAgICAgICB9LAogICAgICAgICJraW5kIjogewogICAg
+ICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJ4LW1zLW11dGFi
+aWxpdHkiOiBbCiAgICAgICAgICAgICJyZWFkIiwKICAgICAgICAgICAgImNy
+ZWF0ZSIKICAgICAgICAgIF0sCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAi
+TWV0YWRhdGEgdXNlZCBieSBwb3J0YWwvdG9vbGluZy9ldGMgdG8gcmVuZGVy
+IGRpZmZlcmVudCBVWCBleHBlcmllbmNlcyBmb3IgcmVzb3VyY2VzIG9mIHRo
+ZSBzYW1lIHR5cGU7IGUuZy4gQXBpQXBwcyBhcmUgYSBraW5kIG9mIE1pY3Jv
+c29mdC5XZWIvc2l0ZXMgdHlwZS4gIElmIHN1cHBvcnRlZCwgdGhlIHJlc291
+cmNlIHByb3ZpZGVyIG11c3QgdmFsaWRhdGUgYW5kIHBlcnNpc3QgdGhpcyB2
+YWx1ZS4iLAogICAgICAgICAgInBhdHRlcm4iOiAiXlstXFx3XFwuXyxcXChc
+XCldKyQiCiAgICAgICAgfSwKICAgICAgICAiZXRhZyI6IHsKICAgICAgICAg
+ICJyZWFkT25seSI6IHRydWUsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmci
+LAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBldGFnIGZpZWxkIGlz
+ICpub3QqIHJlcXVpcmVkLiBJZiBpdCBpcyBwcm92aWRlZCBpbiB0aGUgcmVz
+cG9uc2UgYm9keSwgaXQgbXVzdCBhbHNvIGJlIHByb3ZpZGVkIGFzIGEgaGVh
+ZGVyIHBlciB0aGUgbm9ybWFsIGV0YWcgY29udmVudGlvbi4gIEVudGl0eSB0
+YWdzIGFyZSB1c2VkIGZvciBjb21wYXJpbmcgdHdvIG9yIG1vcmUgZW50aXRp
+ZXMgZnJvbSB0aGUgc2FtZSByZXF1ZXN0ZWQgcmVzb3VyY2UuIEhUVFAvMS4x
+IHVzZXMgZW50aXR5IHRhZ3MgaW4gdGhlIGV0YWcgKHNlY3Rpb24gMTQuMTkp
+LCBJZi1NYXRjaCAoc2VjdGlvbiAxNC4yNCksIElmLU5vbmUtTWF0Y2ggKHNl
+Y3Rpb24gMTQuMjYpLCBhbmQgSWYtUmFuZ2UgKHNlY3Rpb24gMTQuMjcpIGhl
+YWRlciBmaWVsZHMuICIKICAgICAgICB9LAogICAgICAgICJpZGVudGl0eSI6
+IHsKICAgICAgICAgICJhbGxPZiI6IFsKICAgICAgICAgICAgewogICAgICAg
+ICAgICAgICIkcmVmIjogIiMvZGVmaW5pdGlvbnMvSWRlbnRpdHkiCiAgICAg
+ICAgICAgIH0KICAgICAgICAgIF0KICAgICAgICB9LAogICAgICAgICJza3Ui
+OiB7CiAgICAgICAgICAiYWxsT2YiOiBbCiAgICAgICAgICAgIHsKICAgICAg
+ICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL1NrdSIKICAgICAgICAg
+ICAgfQogICAgICAgICAgXQogICAgICAgIH0sCiAgICAgICAgInBsYW4iOiB7
+CiAgICAgICAgICAiYWxsT2YiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAg
+ICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL1BsYW4iCiAgICAgICAgICAg
+IH0KICAgICAgICAgIF0KICAgICAgICB9CiAgICAgIH0sCiAgICAgICJhbGxP
+ZiI6IFsKICAgICAgICB7CiAgICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRp
+b25zL1RyYWNrZWRSZXNvdXJjZSIKICAgICAgICB9CiAgICAgIF0sCiAgICAg
+ICJ4LW1zLWF6dXJlLXJlc291cmNlIjogdHJ1ZQogICAgfSwKICAgICJTa3VU
+aWVyIjogewogICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAiZW51bSI6
+IFsKICAgICAgICAiRnJlZSIsCiAgICAgICAgIkJhc2ljIiwKICAgICAgICAi
+U3RhbmRhcmQiLAogICAgICAgICJQcmVtaXVtIgogICAgICBdLAogICAgICAi
+eC1tcy1lbnVtIjogewogICAgICAgICJuYW1lIjogIlNrdVRpZXIiLAogICAg
+ICAgICJtb2RlbEFzU3RyaW5nIjogZmFsc2UKICAgICAgfSwKICAgICAgImRl
+c2NyaXB0aW9uIjogIlRoaXMgZmllbGQgaXMgcmVxdWlyZWQgdG8gYmUgaW1w
+bGVtZW50ZWQgYnkgdGhlIFJlc291cmNlIFByb3ZpZGVyIGlmIHRoZSBzZXJ2
+aWNlIGhhcyBtb3JlIHRoYW4gb25lIHRpZXIsIGJ1dCBpcyBub3QgcmVxdWly
+ZWQgb24gYSBQVVQuIgogICAgfSwKICAgICJTa3UiOiB7CiAgICAgICJkZXNj
+cmlwdGlvbiI6ICJUaGUgcmVzb3VyY2UgbW9kZWwgZGVmaW5pdGlvbiByZXBy
+ZXNlbnRpbmcgU0tVIiwKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAg
+InByb3BlcnRpZXMiOiB7CiAgICAgICAgIm5hbWUiOiB7CiAgICAgICAgICAi
+dHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRo
+ZSBuYW1lIG9mIHRoZSBTS1UuIEV4IC0gUDMuIEl0IGlzIHR5cGljYWxseSBh
+IGxldHRlcitudW1iZXIgY29kZSIKICAgICAgICB9LAogICAgICAgICJ0aWVy
+IjogewogICAgICAgICAgIiRyZWYiOiAiIy9kZWZpbml0aW9ucy9Ta3VUaWVy
+IgogICAgICAgIH0sCiAgICAgICAgInNpemUiOiB7CiAgICAgICAgICAidHlw
+ZSI6ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBT
+S1Ugc2l6ZS4gV2hlbiB0aGUgbmFtZSBmaWVsZCBpcyB0aGUgY29tYmluYXRp
+b24gb2YgdGllciBhbmQgc29tZSBvdGhlciB2YWx1ZSwgdGhpcyB3b3VsZCBi
+ZSB0aGUgc3RhbmRhbG9uZSBjb2RlLiAiCiAgICAgICAgfSwKICAgICAgICAi
+ZmFtaWx5IjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAg
+ICAgICJkZXNjcmlwdGlvbiI6ICJJZiB0aGUgc2VydmljZSBoYXMgZGlmZmVy
+ZW50IGdlbmVyYXRpb25zIG9mIGhhcmR3YXJlLCBmb3IgdGhlIHNhbWUgU0tV
+LCB0aGVuIHRoYXQgY2FuIGJlIGNhcHR1cmVkIGhlcmUuIgogICAgICAgIH0s
+CiAgICAgICAgImNhcGFjaXR5IjogewogICAgICAgICAgInR5cGUiOiAiaW50
+ZWdlciIsCiAgICAgICAgICAiZm9ybWF0IjogImludDMyIiwKICAgICAgICAg
+ICJkZXNjcmlwdGlvbiI6ICJJZiB0aGUgU0tVIHN1cHBvcnRzIHNjYWxlIG91
+dC9pbiB0aGVuIHRoZSBjYXBhY2l0eSBpbnRlZ2VyIHNob3VsZCBiZSBpbmNs
+dWRlZC4gSWYgc2NhbGUgb3V0L2luIGlzIG5vdCBwb3NzaWJsZSBmb3IgdGhl
+IHJlc291cmNlIHRoaXMgbWF5IGJlIG9taXR0ZWQuIgogICAgICAgIH0KICAg
+ICAgfSwKICAgICAgInJlcXVpcmVkIjogWwogICAgICAgICJuYW1lIgogICAg
+ICBdCiAgICB9LAogICAgIklkZW50aXR5IjogewogICAgICAiZGVzY3JpcHRp
+b24iOiAiSWRlbnRpdHkgZm9yIHRoZSByZXNvdXJjZS4iLAogICAgICAidHlw
+ZSI6ICJvYmplY3QiLAogICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAi
+cHJpbmNpcGFsSWQiOiB7CiAgICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAog
+ICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJkZXNjcmlw
+dGlvbiI6ICJUaGUgcHJpbmNpcGFsIElEIG9mIHJlc291cmNlIGlkZW50aXR5
+LiIKICAgICAgICB9LAogICAgICAgICJ0ZW5hbnRJZCI6IHsKICAgICAgICAg
+ICJyZWFkT25seSI6IHRydWUsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmci
+LAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSB0ZW5hbnQgSUQgb2Yg
+cmVzb3VyY2UuIgogICAgICAgIH0sCiAgICAgICAgInR5cGUiOiB7CiAgICAg
+ICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0aW9u
+IjogIlRoZSBpZGVudGl0eSB0eXBlLiIsCiAgICAgICAgICAiZW51bSI6IFsK
+ICAgICAgICAgICAgIlN5c3RlbUFzc2lnbmVkIgogICAgICAgICAgXSwKICAg
+ICAgICAgICJ4LW1zLWVudW0iOiB7CiAgICAgICAgICAgICJuYW1lIjogIlJl
+c291cmNlSWRlbnRpdHlUeXBlIiwKICAgICAgICAgICAgIm1vZGVsQXNTdHJp
+bmciOiBmYWxzZQogICAgICAgICAgfQogICAgICAgIH0KICAgICAgfQogICAg
+fSwKICAgICJQbGFuIjogewogICAgICAidHlwZSI6ICJvYmplY3QiLAogICAg
+ICAicHJvcGVydGllcyI6IHsKICAgICAgICAibmFtZSI6IHsKICAgICAgICAg
+ICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAi
+QSB1c2VyIGRlZmluZWQgbmFtZSBvZiB0aGUgM3JkIFBhcnR5IEFydGlmYWN0
+IHRoYXQgaXMgYmVpbmcgcHJvY3VyZWQuIgogICAgICAgIH0sCiAgICAgICAg
+InB1Ymxpc2hlciI6IHsKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAg
+ICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIHB1Ymxpc2hlciBvZiB0aGUg
+M3JkIFBhcnR5IEFydGlmYWN0IHRoYXQgaXMgYmVpbmcgYm91Z2h0LiBFLmcu
+IE5ld1JlbGljIgogICAgICAgIH0sCiAgICAgICAgInByb2R1Y3QiOiB7CiAg
+ICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0
+aW9uIjogIlRoZSAzcmQgUGFydHkgYXJ0aWZhY3QgdGhhdCBpcyBiZWluZyBw
+cm9jdXJlZC4gRS5nLiBOZXdSZWxpYy4gUHJvZHVjdCBtYXBzIHRvIHRoZSBP
+ZmZlcklEIHNwZWNpZmllZCBmb3IgdGhlIGFydGlmYWN0IGF0IHRoZSB0aW1l
+IG9mIERhdGEgTWFya2V0IG9uYm9hcmRpbmcuICIKICAgICAgICB9LAogICAg
+ICAgICJwcm9tb3Rpb25Db2RlIjogewogICAgICAgICAgInR5cGUiOiAic3Ry
+aW5nIiwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJBIHB1Ymxpc2hlciBw
+cm92aWRlZCBwcm9tb3Rpb24gY29kZSBhcyBwcm92aXNpb25lZCBpbiBEYXRh
+IE1hcmtldCBmb3IgdGhlIHNhaWQgcHJvZHVjdC9hcnRpZmFjdC4iCiAgICAg
+ICAgfSwKICAgICAgICAidmVyc2lvbiI6IHsKICAgICAgICAgICJ0eXBlIjog
+InN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIHZlcnNp
+b24gb2YgdGhlIGRlc2lyZWQgcHJvZHVjdC9hcnRpZmFjdC4iCiAgICAgICAg
+fQogICAgICB9LAogICAgICAiZGVzY3JpcHRpb24iOiAiUGxhbiBmb3IgdGhl
+IHJlc291cmNlLiIsCiAgICAgICJyZXF1aXJlZCI6IFsKICAgICAgICAibmFt
+ZSIsCiAgICAgICAgInB1Ymxpc2hlciIsCiAgICAgICAgInByb2R1Y3QiCiAg
+ICAgIF0KICAgIH0sCiAgICAiRXJyb3JEZXRhaWwiOiB7CiAgICAgICJkZXNj
+cmlwdGlvbiI6ICJUaGUgZXJyb3IgZGV0YWlsLiIsCiAgICAgICJ0eXBlIjog
+Im9iamVjdCIsCiAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICJjb2Rl
+IjogewogICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZSwKICAgICAgICAgICJ0
+eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhl
+IGVycm9yIGNvZGUuIgogICAgICAgIH0sCiAgICAgICAgIm1lc3NhZ2UiOiB7
+CiAgICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAogICAgICAgICAgInR5cGUi
+OiAic3RyaW5nIiwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgZXJy
+b3IgbWVzc2FnZS4iCiAgICAgICAgfSwKICAgICAgICAidGFyZ2V0Ijogewog
+ICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZSwKICAgICAgICAgICJ0eXBlIjog
+InN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIGVycm9y
+IHRhcmdldC4iCiAgICAgICAgfSwKICAgICAgICAiZGV0YWlscyI6IHsKICAg
+ICAgICAgICJyZWFkT25seSI6IHRydWUsCiAgICAgICAgICAidHlwZSI6ICJh
+cnJheSIsCiAgICAgICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICIkcmVm
+IjogIiMvZGVmaW5pdGlvbnMvRXJyb3JEZXRhaWwiCiAgICAgICAgICB9LAog
+ICAgICAgICAgIngtbXMtaWRlbnRpZmllcnMiOiBbCiAgICAgICAgICAgICJt
+ZXNzYWdlIiwKICAgICAgICAgICAgInRhcmdldCIKICAgICAgICAgIF0sCiAg
+ICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIGVycm9yIGRldGFpbHMuIgog
+ICAgICAgIH0sCiAgICAgICAgImFkZGl0aW9uYWxJbmZvIjogewogICAgICAg
+ICAgInJlYWRPbmx5IjogdHJ1ZSwKICAgICAgICAgICJ0eXBlIjogImFycmF5
+IiwKICAgICAgICAgICJpdGVtcyI6IHsKICAgICAgICAgICAgIiRyZWYiOiAi
+Iy9kZWZpbml0aW9ucy9FcnJvckFkZGl0aW9uYWxJbmZvIgogICAgICAgICAg
+fSwKICAgICAgICAgICJ4LW1zLWlkZW50aWZpZXJzIjogW10sCiAgICAgICAg
+ICAiZGVzY3JpcHRpb24iOiAiVGhlIGVycm9yIGFkZGl0aW9uYWwgaW5mby4i
+CiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgIkVycm9yUmVzcG9uc2Ui
+OiB7CiAgICAgICJ0aXRsZSI6ICJFcnJvciByZXNwb25zZSIsCiAgICAgICJk
+ZXNjcmlwdGlvbiI6ICJDb21tb24gZXJyb3IgcmVzcG9uc2UgZm9yIGFsbCBB
+enVyZSBSZXNvdXJjZSBNYW5hZ2VyIEFQSXMgdG8gcmV0dXJuIGVycm9yIGRl
+dGFpbHMgZm9yIGZhaWxlZCBvcGVyYXRpb25zLiAoVGhpcyBhbHNvIGZvbGxv
+d3MgdGhlIE9EYXRhIGVycm9yIHJlc3BvbnNlIGZvcm1hdC4pLiIsCiAgICAg
+ICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJwcm9wZXJ0aWVzIjogewogICAg
+ICAgICJlcnJvciI6IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUg
+ZXJyb3Igb2JqZWN0LiIsCiAgICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRp
+b25zL0Vycm9yRGV0YWlsIgogICAgICAgIH0KICAgICAgfQogICAgfSwKICAg
+ICJFcnJvckFkZGl0aW9uYWxJbmZvIjogewogICAgICAidHlwZSI6ICJvYmpl
+Y3QiLAogICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAidHlwZSI6IHsK
+ICAgICAgICAgICJyZWFkT25seSI6IHRydWUsCiAgICAgICAgICAidHlwZSI6
+ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBhZGRp
+dGlvbmFsIGluZm8gdHlwZS4iCiAgICAgICAgfSwKICAgICAgICAiaW5mbyI6
+IHsKICAgICAgICAgICJyZWFkT25seSI6IHRydWUsCiAgICAgICAgICAidHlw
+ZSI6ICJvYmplY3QiLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBh
+ZGRpdGlvbmFsIGluZm8uIgogICAgICAgIH0KICAgICAgfSwKICAgICAgImRl
+c2NyaXB0aW9uIjogIlRoZSByZXNvdXJjZSBtYW5hZ2VtZW50IGVycm9yIGFk
+ZGl0aW9uYWwgaW5mby4iCiAgICB9LAogICAgIk9wZXJhdGlvbiI6IHsKICAg
+ICAgInRpdGxlIjogIlJFU1QgQVBJIE9wZXJhdGlvbiIsCiAgICAgICJkZXNj
+cmlwdGlvbiI6ICJEZXRhaWxzIG9mIGEgUkVTVCBBUEkgb3BlcmF0aW9uLCBy
+ZXR1cm5lZCBmcm9tIHRoZSBSZXNvdXJjZSBQcm92aWRlciBPcGVyYXRpb25z
+IEFQSSIsCiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJwcm9wZXJ0
+aWVzIjogewogICAgICAgICJuYW1lIjogewogICAgICAgICAgImRlc2NyaXB0
+aW9uIjogIlRoZSBuYW1lIG9mIHRoZSBvcGVyYXRpb24sIGFzIHBlciBSZXNv
+dXJjZS1CYXNlZCBBY2Nlc3MgQ29udHJvbCAoUkJBQykuIEV4YW1wbGVzOiBc
+Ik1pY3Jvc29mdC5Db21wdXRlL3ZpcnR1YWxNYWNoaW5lcy93cml0ZVwiLCBc
+Ik1pY3Jvc29mdC5Db21wdXRlL3ZpcnR1YWxNYWNoaW5lcy9jYXB0dXJlL2Fj
+dGlvblwiIiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAg
+ICAicmVhZE9ubHkiOiB0cnVlCiAgICAgICAgfSwKICAgICAgICAiaXNEYXRh
+QWN0aW9uIjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIldoZXRoZXIg
+dGhlIG9wZXJhdGlvbiBhcHBsaWVzIHRvIGRhdGEtcGxhbmUuIFRoaXMgaXMg
+XCJ0cnVlXCIgZm9yIGRhdGEtcGxhbmUgb3BlcmF0aW9ucyBhbmQgXCJmYWxz
+ZVwiIGZvciBBUk0vY29udHJvbC1wbGFuZSBvcGVyYXRpb25zLiIsCiAgICAg
+ICAgICAidHlwZSI6ICJib29sZWFuIiwKICAgICAgICAgICJyZWFkT25seSI6
+IHRydWUKICAgICAgICB9LAogICAgICAgICJkaXNwbGF5IjogewogICAgICAg
+ICAgImRlc2NyaXB0aW9uIjogIkxvY2FsaXplZCBkaXNwbGF5IGluZm9ybWF0
+aW9uIGZvciB0aGlzIHBhcnRpY3VsYXIgb3BlcmF0aW9uLiIsCiAgICAgICAg
+ICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICAgInByb3BlcnRpZXMiOiB7
+CiAgICAgICAgICAgICJwcm92aWRlciI6IHsKICAgICAgICAgICAgICAiZGVz
+Y3JpcHRpb24iOiAiVGhlIGxvY2FsaXplZCBmcmllbmRseSBmb3JtIG9mIHRo
+ZSByZXNvdXJjZSBwcm92aWRlciBuYW1lLCBlLmcuIFwiTWljcm9zb2Z0IE1v
+bml0b3JpbmcgSW5zaWdodHNcIiBvciBcIk1pY3Jvc29mdCBDb21wdXRlXCIu
+IiwKICAgICAgICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAg
+ICAgICJyZWFkT25seSI6IHRydWUKICAgICAgICAgICAgfSwKICAgICAgICAg
+ICAgInJlc291cmNlIjogewogICAgICAgICAgICAgICJkZXNjcmlwdGlvbiI6
+ICJUaGUgbG9jYWxpemVkIGZyaWVuZGx5IG5hbWUgb2YgdGhlIHJlc291cmNl
+IHR5cGUgcmVsYXRlZCB0byB0aGlzIG9wZXJhdGlvbi4gRS5nLiBcIlZpcnR1
+YWwgTWFjaGluZXNcIiBvciBcIkpvYiBTY2hlZHVsZSBDb2xsZWN0aW9uc1wi
+LiIsCiAgICAgICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAg
+ICAgICAicmVhZE9ubHkiOiB0cnVlCiAgICAgICAgICAgIH0sCiAgICAgICAg
+ICAgICJvcGVyYXRpb24iOiB7CiAgICAgICAgICAgICAgImRlc2NyaXB0aW9u
+IjogIlRoZSBjb25jaXNlLCBsb2NhbGl6ZWQgZnJpZW5kbHkgbmFtZSBmb3Ig
+dGhlIG9wZXJhdGlvbjsgc3VpdGFibGUgZm9yIGRyb3Bkb3ducy4gRS5nLiBc
+IkNyZWF0ZSBvciBVcGRhdGUgVmlydHVhbCBNYWNoaW5lXCIsIFwiUmVzdGFy
+dCBWaXJ0dWFsIE1hY2hpbmVcIi4iLAogICAgICAgICAgICAgICJ0eXBlIjog
+InN0cmluZyIsCiAgICAgICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZQogICAg
+ICAgICAgICB9LAogICAgICAgICAgICAiZGVzY3JpcHRpb24iOiB7CiAgICAg
+ICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBzaG9ydCwgbG9jYWxpemVk
+IGZyaWVuZGx5IGRlc2NyaXB0aW9uIG9mIHRoZSBvcGVyYXRpb247IHN1aXRh
+YmxlIGZvciB0b29sIHRpcHMgYW5kIGRldGFpbGVkIHZpZXdzLiIsCiAgICAg
+ICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICAgICAicmVh
+ZE9ubHkiOiB0cnVlCiAgICAgICAgICAgIH0KICAgICAgICAgIH0KICAgICAg
+ICB9LAogICAgICAgICJvcmlnaW4iOiB7CiAgICAgICAgICAiZGVzY3JpcHRp
+b24iOiAiVGhlIGludGVuZGVkIGV4ZWN1dG9yIG9mIHRoZSBvcGVyYXRpb247
+IGFzIGluIFJlc291cmNlIEJhc2VkIEFjY2VzcyBDb250cm9sIChSQkFDKSBh
+bmQgYXVkaXQgbG9ncyBVWC4gRGVmYXVsdCB2YWx1ZSBpcyBcInVzZXIsc3lz
+dGVtXCIiLAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAg
+ICJyZWFkT25seSI6IHRydWUsCiAgICAgICAgICAiZW51bSI6IFsKICAgICAg
+ICAgICAgInVzZXIiLAogICAgICAgICAgICAic3lzdGVtIiwKICAgICAgICAg
+ICAgInVzZXIsc3lzdGVtIgogICAgICAgICAgXSwKICAgICAgICAgICJ4LW1z
+LWVudW0iOiB7CiAgICAgICAgICAgICJuYW1lIjogIk9yaWdpbiIsCiAgICAg
+ICAgICAgICJtb2RlbEFzU3RyaW5nIjogdHJ1ZQogICAgICAgICAgfQogICAg
+ICAgIH0sCiAgICAgICAgImFjdGlvblR5cGUiOiB7CiAgICAgICAgICAiZGVz
+Y3JpcHRpb24iOiAiRW51bS4gSW5kaWNhdGVzIHRoZSBhY3Rpb24gdHlwZS4g
+XCJJbnRlcm5hbFwiIHJlZmVycyB0byBhY3Rpb25zIHRoYXQgYXJlIGZvciBp
+bnRlcm5hbCBvbmx5IEFQSXMuIiwKICAgICAgICAgICJ0eXBlIjogInN0cmlu
+ZyIsCiAgICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAogICAgICAgICAgImVu
+dW0iOiBbCiAgICAgICAgICAgICJJbnRlcm5hbCIKICAgICAgICAgIF0sCiAg
+ICAgICAgICAieC1tcy1lbnVtIjogewogICAgICAgICAgICAibmFtZSI6ICJB
+Y3Rpb25UeXBlIiwKICAgICAgICAgICAgIm1vZGVsQXNTdHJpbmciOiB0cnVl
+CiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgIk9w
+ZXJhdGlvbkxpc3RSZXN1bHQiOiB7CiAgICAgICJkZXNjcmlwdGlvbiI6ICJB
+IGxpc3Qgb2YgUkVTVCBBUEkgb3BlcmF0aW9ucyBzdXBwb3J0ZWQgYnkgYW4g
+QXp1cmUgUmVzb3VyY2UgUHJvdmlkZXIuIEl0IGNvbnRhaW5zIGFuIFVSTCBs
+aW5rIHRvIGdldCB0aGUgbmV4dCBzZXQgb2YgcmVzdWx0cy4iLAogICAgICAi
+dHlwZSI6ICJvYmplY3QiLAogICAgICAicHJvcGVydGllcyI6IHsKICAgICAg
+ICAidmFsdWUiOiB7CiAgICAgICAgICAidHlwZSI6ICJhcnJheSIsCiAgICAg
+ICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICIkcmVmIjogIiMvZGVmaW5p
+dGlvbnMvT3BlcmF0aW9uIgogICAgICAgICAgfSwKICAgICAgICAgICJ4LW1z
+LWlkZW50aWZpZXJzIjogWwogICAgICAgICAgICAibmFtZSIKICAgICAgICAg
+IF0sCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiTGlzdCBvZiBvcGVyYXRp
+b25zIHN1cHBvcnRlZCBieSB0aGUgcmVzb3VyY2UgcHJvdmlkZXIiLAogICAg
+ICAgICAgInJlYWRPbmx5IjogdHJ1ZQogICAgICAgIH0sCiAgICAgICAgIm5l
+eHRMaW5rIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAg
+ICAgICJkZXNjcmlwdGlvbiI6ICJVUkwgdG8gZ2V0IHRoZSBuZXh0IHNldCBv
+ZiBvcGVyYXRpb24gbGlzdCByZXN1bHRzIChpZiB0aGVyZSBhcmUgYW55KS4i
+LAogICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZQogICAgICAgIH0KICAgICAg
+fQogICAgfSwKICAgICJPcGVyYXRpb25TdGF0dXNSZXN1bHQiOiB7CiAgICAg
+ICJkZXNjcmlwdGlvbiI6ICJUaGUgY3VycmVudCBzdGF0dXMgb2YgYW4gYXN5
+bmMgb3BlcmF0aW9uLiIsCiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAg
+ICJyZXF1aXJlZCI6IFsKICAgICAgICAic3RhdHVzIgogICAgICBdLAogICAg
+ICAicHJvcGVydGllcyI6IHsKICAgICAgICAiaWQiOiB7CiAgICAgICAgICAi
+ZGVzY3JpcHRpb24iOiAiRnVsbHkgcXVhbGlmaWVkIElEIGZvciB0aGUgYXN5
+bmMgb3BlcmF0aW9uLiIsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAg
+ICAgICAgfSwKICAgICAgICAibmFtZSI6IHsKICAgICAgICAgICJkZXNjcmlw
+dGlvbiI6ICJOYW1lIG9mIHRoZSBhc3luYyBvcGVyYXRpb24uIiwKICAgICAg
+ICAgICJ0eXBlIjogInN0cmluZyIKICAgICAgICB9LAogICAgICAgICJzdGF0
+dXMiOiB7CiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiT3BlcmF0aW9uIHN0
+YXR1cy4iLAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIgogICAgICAgIH0s
+CiAgICAgICAgInBlcmNlbnRDb21wbGV0ZSI6IHsKICAgICAgICAgICJkZXNj
+cmlwdGlvbiI6ICJQZXJjZW50IG9mIHRoZSBvcGVyYXRpb24gdGhhdCBpcyBj
+b21wbGV0ZS4iLAogICAgICAgICAgInR5cGUiOiAibnVtYmVyIiwKICAgICAg
+ICAgICJtaW5pbXVtIjogMCwKICAgICAgICAgICJtYXhpbXVtIjogMTAwCiAg
+ICAgICAgfSwKICAgICAgICAic3RhcnRUaW1lIjogewogICAgICAgICAgImRl
+c2NyaXB0aW9uIjogIlRoZSBzdGFydCB0aW1lIG9mIHRoZSBvcGVyYXRpb24u
+IiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZm9y
+bWF0IjogImRhdGUtdGltZSIKICAgICAgICB9LAogICAgICAgICJlbmRUaW1l
+IjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBlbmQgdGltZSBv
+ZiB0aGUgb3BlcmF0aW9uLiIsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmci
+LAogICAgICAgICAgImZvcm1hdCI6ICJkYXRlLXRpbWUiCiAgICAgICAgfSwK
+ICAgICAgICAib3BlcmF0aW9ucyI6IHsKICAgICAgICAgICJkZXNjcmlwdGlv
+biI6ICJUaGUgb3BlcmF0aW9ucyBsaXN0LiIsCiAgICAgICAgICAidHlwZSI6
+ICJhcnJheSIsCiAgICAgICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICIk
+cmVmIjogIiMvZGVmaW5pdGlvbnMvT3BlcmF0aW9uU3RhdHVzUmVzdWx0Igog
+ICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgImVycm9yIjogewogICAg
+ICAgICAgImRlc2NyaXB0aW9uIjogIklmIHByZXNlbnQsIGRldGFpbHMgb2Yg
+dGhlIG9wZXJhdGlvbiBlcnJvci4iLAogICAgICAgICAgIiRyZWYiOiAiIy9k
+ZWZpbml0aW9ucy9FcnJvckRldGFpbCIKICAgICAgICB9CiAgICAgIH0KICAg
+IH0sCiAgICAibG9jYXRpb25EYXRhIjogewogICAgICAiZGVzY3JpcHRpb24i
+OiAiTWV0YWRhdGEgcGVydGFpbmluZyB0byB0aGUgZ2VvZ3JhcGhpYyBsb2Nh
+dGlvbiBvZiB0aGUgcmVzb3VyY2UuIiwKICAgICAgInR5cGUiOiAib2JqZWN0
+IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgIm5hbWUiOiB7CiAg
+ICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgIm1heExlbmd0
+aCI6IDI1NiwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJBIGNhbm9uaWNh
+bCBuYW1lIGZvciB0aGUgZ2VvZ3JhcGhpYyBvciBwaHlzaWNhbCBsb2NhdGlv
+bi4iCiAgICAgICAgfSwKICAgICAgICAiY2l0eSI6IHsKICAgICAgICAgICJ0
+eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhl
+IGNpdHkgb3IgbG9jYWxpdHkgd2hlcmUgdGhlIHJlc291cmNlIGlzIGxvY2F0
+ZWQuIgogICAgICAgIH0sCiAgICAgICAgImRpc3RyaWN0IjogewogICAgICAg
+ICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6
+ICJUaGUgZGlzdHJpY3QsIHN0YXRlLCBvciBwcm92aW5jZSB3aGVyZSB0aGUg
+cmVzb3VyY2UgaXMgbG9jYXRlZC4iCiAgICAgICAgfSwKICAgICAgICAiY291
+bnRyeU9yUmVnaW9uIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwK
+ICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgY291bnRyeSBvciByZWdp
+b24gd2hlcmUgdGhlIHJlc291cmNlIGlzIGxvY2F0ZWQiCiAgICAgICAgfQog
+ICAgICB9LAogICAgICAicmVxdWlyZWQiOiBbCiAgICAgICAgIm5hbWUiCiAg
+ICAgIF0KICAgIH0sCiAgICAic3lzdGVtRGF0YSI6IHsKICAgICAgImRlc2Ny
+aXB0aW9uIjogIk1ldGFkYXRhIHBlcnRhaW5pbmcgdG8gY3JlYXRpb24gYW5k
+IGxhc3QgbW9kaWZpY2F0aW9uIG9mIHRoZSByZXNvdXJjZS4iLAogICAgICAi
+dHlwZSI6ICJvYmplY3QiLAogICAgICAicmVhZE9ubHkiOiB0cnVlLAogICAg
+ICAicHJvcGVydGllcyI6IHsKICAgICAgICAiY3JlYXRlZEJ5IjogewogICAg
+ICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJkZXNjcmlwdGlv
+biI6ICJUaGUgaWRlbnRpdHkgdGhhdCBjcmVhdGVkIHRoZSByZXNvdXJjZS4i
+CiAgICAgICAgfSwKICAgICAgICAiY3JlYXRlZEJ5VHlwZSI6IHsKICAgICAg
+ICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24i
+OiAiVGhlIHR5cGUgb2YgaWRlbnRpdHkgdGhhdCBjcmVhdGVkIHRoZSByZXNv
+dXJjZS4iLAogICAgICAgICAgImVudW0iOiBbCiAgICAgICAgICAgICJVc2Vy
+IiwKICAgICAgICAgICAgIkFwcGxpY2F0aW9uIiwKICAgICAgICAgICAgIk1h
+bmFnZWRJZGVudGl0eSIsCiAgICAgICAgICAgICJLZXkiCiAgICAgICAgICBd
+LAogICAgICAgICAgIngtbXMtZW51bSI6IHsKICAgICAgICAgICAgIm5hbWUi
+OiAiY3JlYXRlZEJ5VHlwZSIsCiAgICAgICAgICAgICJtb2RlbEFzU3RyaW5n
+IjogdHJ1ZQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgImNyZWF0
+ZWRBdCI6IHsKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAg
+ICAiZm9ybWF0IjogImRhdGUtdGltZSIsCiAgICAgICAgICAiZGVzY3JpcHRp
+b24iOiAiVGhlIHRpbWVzdGFtcCBvZiByZXNvdXJjZSBjcmVhdGlvbiAoVVRD
+KS4iCiAgICAgICAgfSwKICAgICAgICAibGFzdE1vZGlmaWVkQnkiOiB7CiAg
+ICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0
+aW9uIjogIlRoZSBpZGVudGl0eSB0aGF0IGxhc3QgbW9kaWZpZWQgdGhlIHJl
+c291cmNlLiIKICAgICAgICB9LAogICAgICAgICJsYXN0TW9kaWZpZWRCeVR5
+cGUiOiB7CiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAg
+ImRlc2NyaXB0aW9uIjogIlRoZSB0eXBlIG9mIGlkZW50aXR5IHRoYXQgbGFz
+dCBtb2RpZmllZCB0aGUgcmVzb3VyY2UuIiwKICAgICAgICAgICJlbnVtIjog
+WwogICAgICAgICAgICAiVXNlciIsCiAgICAgICAgICAgICJBcHBsaWNhdGlv
+biIsCiAgICAgICAgICAgICJNYW5hZ2VkSWRlbnRpdHkiLAogICAgICAgICAg
+ICAiS2V5IgogICAgICAgICAgXSwKICAgICAgICAgICJ4LW1zLWVudW0iOiB7
+CiAgICAgICAgICAgICJuYW1lIjogImNyZWF0ZWRCeVR5cGUiLAogICAgICAg
+ICAgICAibW9kZWxBc1N0cmluZyI6IHRydWUKICAgICAgICAgIH0KICAgICAg
+ICB9LAogICAgICAgICJsYXN0TW9kaWZpZWRBdCI6IHsKICAgICAgICAgICJ0
+eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZm9ybWF0IjogImRhdGUtdGlt
+ZSIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIHRpbWVzdGFtcCBv
+ZiByZXNvdXJjZSBsYXN0IG1vZGlmaWNhdGlvbiAoVVRDKSIKICAgICAgICB9
+CiAgICAgIH0KICAgIH0sCiAgICAiZW5jcnlwdGlvblByb3BlcnRpZXMiOiB7
+CiAgICAgICJkZXNjcmlwdGlvbiI6ICJDb25maWd1cmF0aW9uIG9mIGtleSBm
+b3IgZGF0YSBlbmNyeXB0aW9uIiwKICAgICAgInR5cGUiOiAib2JqZWN0IiwK
+ICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgInN0YXR1cyI6IHsKICAg
+ICAgICAgICJkZXNjcmlwdGlvbiI6ICJJbmRpY2F0ZXMgd2hldGhlciBvciBu
+b3QgdGhlIGVuY3J5cHRpb24gaXMgZW5hYmxlZCBmb3IgY29udGFpbmVyIHJl
+Z2lzdHJ5LiIsCiAgICAgICAgICAiZW51bSI6IFsKICAgICAgICAgICAgImVu
+YWJsZWQiLAogICAgICAgICAgICAiZGlzYWJsZWQiCiAgICAgICAgICBdLAog
+ICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJ4LW1zLWVu
+dW0iOiB7CiAgICAgICAgICAgICJuYW1lIjogIkVuY3J5cHRpb25TdGF0dXMi
+LAogICAgICAgICAgICAibW9kZWxBc1N0cmluZyI6IHRydWUKICAgICAgICAg
+IH0KICAgICAgICB9LAogICAgICAgICJrZXlWYXVsdFByb3BlcnRpZXMiOiB7
+CiAgICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL0tleVZhdWx0UHJv
+cGVydGllcyIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiS2V5IHZhdWx0
+IHByb3BlcnRpZXMuIgogICAgICAgIH0KICAgICAgfQogICAgfSwKICAgICJL
+ZXlWYXVsdFByb3BlcnRpZXMiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIs
+CiAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICJrZXlJZGVudGlmaWVy
+IjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIktleSB2YXVsdCB1cmkg
+dG8gYWNjZXNzIHRoZSBlbmNyeXB0aW9uIGtleS4iLAogICAgICAgICAgInR5
+cGUiOiAic3RyaW5nIgogICAgICAgIH0sCiAgICAgICAgImlkZW50aXR5Ijog
+ewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBjbGllbnQgSUQgb2Yg
+dGhlIGlkZW50aXR5IHdoaWNoIHdpbGwgYmUgdXNlZCB0byBhY2Nlc3Mga2V5
+IHZhdWx0LiIsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAg
+fQogICAgICB9CiAgICB9LAogICAgIkNoZWNrTmFtZUF2YWlsYWJpbGl0eVJl
+cXVlc3QiOiB7CiAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgY2hlY2sgYXZh
+aWxhYmlsaXR5IHJlcXVlc3QgYm9keS4iLAogICAgICAidHlwZSI6ICJvYmpl
+Y3QiLAogICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAibmFtZSI6IHsK
+ICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgbmFtZSBvZiB0aGUgcmVz
+b3VyY2UgZm9yIHdoaWNoIGF2YWlsYWJpbGl0eSBuZWVkcyB0byBiZSBjaGVj
+a2VkLiIsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgfSwK
+ICAgICAgICAidHlwZSI6IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJU
+aGUgcmVzb3VyY2UgdHlwZS4iLAogICAgICAgICAgInR5cGUiOiAic3RyaW5n
+IgogICAgICAgIH0KICAgICAgfQogICAgfSwKICAgICJDaGVja05hbWVBdmFp
+bGFiaWxpdHlSZXNwb25zZSI6IHsKICAgICAgImRlc2NyaXB0aW9uIjogIlRo
+ZSBjaGVjayBhdmFpbGFiaWxpdHkgcmVzdWx0LiIsCiAgICAgICJ0eXBlIjog
+Im9iamVjdCIsCiAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICJuYW1l
+QXZhaWxhYmxlIjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIkluZGlj
+YXRlcyBpZiB0aGUgcmVzb3VyY2UgbmFtZSBpcyBhdmFpbGFibGUuIiwKICAg
+ICAgICAgICJ0eXBlIjogImJvb2xlYW4iCiAgICAgICAgfSwKICAgICAgICAi
+cmVhc29uIjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSByZWFz
+b24gd2h5IHRoZSBnaXZlbiBuYW1lIGlzIG5vdCBhdmFpbGFibGUuIiwKICAg
+ICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZW51bSI6IFsK
+ICAgICAgICAgICAgIkludmFsaWQiLAogICAgICAgICAgICAiQWxyZWFkeUV4
+aXN0cyIKICAgICAgICAgIF0sCiAgICAgICAgICAieC1tcy1lbnVtIjogewog
+ICAgICAgICAgICAibmFtZSI6ICJDaGVja05hbWVBdmFpbGFiaWxpdHlSZWFz
+b24iLAogICAgICAgICAgICAibW9kZWxBc1N0cmluZyI6IHRydWUKICAgICAg
+ICAgIH0KICAgICAgICB9LAogICAgICAgICJtZXNzYWdlIjogewogICAgICAg
+ICAgImRlc2NyaXB0aW9uIjogIkRldGFpbGVkIHJlYXNvbiB3aHkgdGhlIGdp
+dmVuIG5hbWUgaXMgYXZhaWxhYmxlLiIsCiAgICAgICAgICAidHlwZSI6ICJz
+dHJpbmciCiAgICAgICAgfQogICAgICB9CiAgICB9CiAgfSwKICAicGFyYW1l
+dGVycyI6IHsKICAgICJTdWJzY3JpcHRpb25JZFBhcmFtZXRlciI6IHsKICAg
+ICAgIm5hbWUiOiAic3Vic2NyaXB0aW9uSWQiLAogICAgICAiaW4iOiAicGF0
+aCIsCiAgICAgICJyZXF1aXJlZCI6IHRydWUsCiAgICAgICJ0eXBlIjogInN0
+cmluZyIsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgSUQgb2YgdGhlIHRh
+cmdldCBzdWJzY3JpcHRpb24uIiwKICAgICAgIm1pbkxlbmd0aCI6IDEKICAg
+IH0sCiAgICAiQXBpVmVyc2lvblBhcmFtZXRlciI6IHsKICAgICAgIm5hbWUi
+OiAiYXBpLXZlcnNpb24iLAogICAgICAiaW4iOiAicXVlcnkiLAogICAgICAi
+cmVxdWlyZWQiOiB0cnVlLAogICAgICAidHlwZSI6ICJzdHJpbmciLAogICAg
+ICAiZGVzY3JpcHRpb24iOiAiVGhlIEFQSSB2ZXJzaW9uIHRvIHVzZSBmb3Ig
+dGhpcyBvcGVyYXRpb24uIiwKICAgICAgIm1pbkxlbmd0aCI6IDEKICAgIH0s
+CiAgICAiUmVzb3VyY2VHcm91cE5hbWVQYXJhbWV0ZXIiOiB7CiAgICAgICJu
+YW1lIjogInJlc291cmNlR3JvdXBOYW1lIiwKICAgICAgImluIjogInBhdGgi
+LAogICAgICAicmVxdWlyZWQiOiB0cnVlLAogICAgICAidHlwZSI6ICJzdHJp
+bmciLAogICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIG5hbWUgb2YgdGhlIHJl
+c291cmNlIGdyb3VwLiBUaGUgbmFtZSBpcyBjYXNlIGluc2Vuc2l0aXZlLiIs
+CiAgICAgICJtaW5MZW5ndGgiOiAxLAogICAgICAibWF4TGVuZ3RoIjogOTAs
+CiAgICAgICJ4LW1zLXBhcmFtZXRlci1sb2NhdGlvbiI6ICJtZXRob2QiCiAg
+ICB9LAogICAgIk9wZXJhdGlvbklkUGFyYW1ldGVyIjogewogICAgICAibmFt
+ZSI6ICJvcGVyYXRpb25JZCIsCiAgICAgICJpbiI6ICJwYXRoIiwKICAgICAg
+InJlcXVpcmVkIjogdHJ1ZSwKICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAg
+ICAgImRlc2NyaXB0aW9uIjogIlRoZSBJRCBvZiBhbiBvbmdvaW5nIGFzeW5j
+IG9wZXJhdGlvbi4iLAogICAgICAibWluTGVuZ3RoIjogMSwKICAgICAgIngt
+bXMtcGFyYW1ldGVyLWxvY2F0aW9uIjogIm1ldGhvZCIKICAgIH0sCiAgICAi
+TG9jYXRpb25QYXJhbWV0ZXIiOiB7CiAgICAgICJuYW1lIjogImxvY2F0aW9u
+IiwKICAgICAgImluIjogInBhdGgiLAogICAgICAicmVxdWlyZWQiOiB0cnVl
+LAogICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAiZGVzY3JpcHRpb24i
+OiAiVGhlIG5hbWUgb2YgQXp1cmUgcmVnaW9uLiIsCiAgICAgICJtaW5MZW5n
+dGgiOiAxLAogICAgICAieC1tcy1wYXJhbWV0ZXItbG9jYXRpb24iOiAibWV0
+aG9kIgogICAgfQogIH0KfQo=

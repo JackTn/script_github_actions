@@ -1,102 +1,102 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "version": "1.0",
-    "title": "Common types test twt test"
-  },
-  "paths": {},
-  "definitions": {
-    "JSONWebKey": {
-      "type": "object",
-      "required": [
-        "kty"
-      ],
-      "properties": {
-        "alg": {
-          "description": "The \"alg\" (algorithm) parameter identifies the algorithm intended for\nuse with the key.  The values used should either be registered in the\nIANA \"JSON Web Signature and Encryption Algorithms\" registry\nestablished by [JWA] or be a value that contains a Collision-\nResistant Name.",
-          "type": "string"
-        },
-        "crv": {
-          "description": "The \"crv\" (curve) parameter identifies the curve type",
-          "type": "string"
-        },
-        "d": {
-          "description": "RSA private exponent or ECC private key",
-          "type": "string"
-        },
-        "dp": {
-          "description": "RSA Private Key Parameter",
-          "type": "string"
-        },
-        "dq": {
-          "description": "RSA Private Key Parameter",
-          "type": "string"
-        },
-        "e": {
-          "description": "RSA public exponent, in Base64",
-          "type": "string"
-        },
-        "k": {
-          "description": "Symmetric key",
-          "type": "string"
-        },
-        "kid": {
-          "description": "The \"kid\" (key ID) parameter is used to match a specific key.  This\nis used, for instance, to choose among a set of keys within a JWK Set\nduring key rollover.  The structure of the \"kid\" value is\nunspecified.  When \"kid\" values are used within a JWK Set, different\nkeys within the JWK Set SHOULD use distinct \"kid\" values.  (One\nexample in which different keys might use the same \"kid\" value is if\nthey have different \"kty\" (key type) values but are considered to be\nequivalent alternatives by the application using them.)  The \"kid\"\nvalue is a case-sensitive string.",
-          "type": "string"
-        },
-        "kty": {
-          "description": "The \"kty\" (key type) parameter identifies the cryptographic algorithm\nfamily used with the key, such as \"RSA\" or \"EC\". \"kty\" values should\neither be registered in the IANA \"JSON Web Key Types\" registry\nestablished by [JWA] or be a value that contains a Collision-\nResistant Name.  The \"kty\" value is a case-sensitive string.",
-          "type": "string"
-        },
-        "n": {
-          "description": "RSA modulus, in Base64",
-          "type": "string"
-        },
-        "p": {
-          "description": "RSA secret prime",
-          "type": "string"
-        },
-        "q": {
-          "description": "RSA secret prime, with p < q",
-          "type": "string"
-        },
-        "qi": {
-          "description": "RSA Private Key Parameter",
-          "type": "string"
-        },
-        "use": {
-          "description": "Use (\"public key use\") identifies the intended use of\nthe public key. The \"use\" parameter is employed to indicate whether\na public key is used for encrypting data or verifying the signature\non data. Values are commonly \"sig\" (signature) or \"enc\" (encryption).",
-          "type": "string"
-        },
-        "x": {
-          "description": "X coordinate for the Elliptic Curve point",
-          "type": "string"
-        },
-        "x5c": {
-          "description": "The \"x5c\" (X.509 certificate chain) parameter contains a chain of one\nor more PKIX certificates [RFC5280].  The certificate chain is\nrepresented as a JSON array of certificate value strings.  Each\nstring in the array is a base64-encoded (Section 4 of [RFC4648] --\nnot base64url-encoded) DER [ITU.X690.1994] PKIX certificate value.\nThe PKIX certificate containing the key value MUST be the first\ncertificate.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "y": {
-          "description": "Y coordinate for the Elliptic Curve point",
-          "type": "string"
-        }
-      }
-    },
-    "JSONWebKeySet": {
-      "type": "object",
-      "properties": {
-        "keys": {
-          "description": "The value of the \"keys\" parameter is an array of JWK values.  By\ndefault, the order of the JWK values within the array does not imply\nan order of preference among them, although applications of JWK Sets\ncan choose to assign a meaning to the order for their purposes, if\ndesired.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/JSONWebKey"
-          },
-          "x-ms-identifiers": []
-        }
-      }
-    }
-  }
-}
+ewogICJzd2FnZ2VyIjogIjIuMCIsCiAgImluZm8iOiB7CiAgICAidmVyc2lv
+biI6ICIxLjAiLAogICAgInRpdGxlIjogIkNvbW1vbiB0eXBlcyB0ZXN0IHR3
+dCB0ZXN0IgogIH0sCiAgInBhdGhzIjoge30sCiAgImRlZmluaXRpb25zIjog
+ewogICAgIkpTT05XZWJLZXkiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIs
+CiAgICAgICJyZXF1aXJlZCI6IFsKICAgICAgICAia3R5IgogICAgICBdLAog
+ICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAiYWxnIjogewogICAgICAg
+ICAgImRlc2NyaXB0aW9uIjogIlRoZSBcImFsZ1wiIChhbGdvcml0aG0pIHBh
+cmFtZXRlciBpZGVudGlmaWVzIHRoZSBhbGdvcml0aG0gaW50ZW5kZWQgZm9y
+XG51c2Ugd2l0aCB0aGUga2V5LiAgVGhlIHZhbHVlcyB1c2VkIHNob3VsZCBl
+aXRoZXIgYmUgcmVnaXN0ZXJlZCBpbiB0aGVcbklBTkEgXCJKU09OIFdlYiBT
+aWduYXR1cmUgYW5kIEVuY3J5cHRpb24gQWxnb3JpdGhtc1wiIHJlZ2lzdHJ5
+XG5lc3RhYmxpc2hlZCBieSBbSldBXSBvciBiZSBhIHZhbHVlIHRoYXQgY29u
+dGFpbnMgYSBDb2xsaXNpb24tXG5SZXNpc3RhbnQgTmFtZS4iLAogICAgICAg
+ICAgInR5cGUiOiAic3RyaW5nIgogICAgICAgIH0sCiAgICAgICAgImNydiI6
+IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgXCJjcnZcIiAoY3Vy
+dmUpIHBhcmFtZXRlciBpZGVudGlmaWVzIHRoZSBjdXJ2ZSB0eXBlIiwKICAg
+ICAgICAgICJ0eXBlIjogInN0cmluZyIKICAgICAgICB9LAogICAgICAgICJk
+IjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlJTQSBwcml2YXRlIGV4
+cG9uZW50IG9yIEVDQyBwcml2YXRlIGtleSIsCiAgICAgICAgICAidHlwZSI6
+ICJzdHJpbmciCiAgICAgICAgfSwKICAgICAgICAiZHAiOiB7CiAgICAgICAg
+ICAiZGVzY3JpcHRpb24iOiAiUlNBIFByaXZhdGUgS2V5IFBhcmFtZXRlciIs
+CiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgfSwKICAgICAg
+ICAiZHEiOiB7CiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiUlNBIFByaXZh
+dGUgS2V5IFBhcmFtZXRlciIsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmci
+CiAgICAgICAgfSwKICAgICAgICAiZSI6IHsKICAgICAgICAgICJkZXNjcmlw
+dGlvbiI6ICJSU0EgcHVibGljIGV4cG9uZW50LCBpbiBCYXNlNjQiLAogICAg
+ICAgICAgInR5cGUiOiAic3RyaW5nIgogICAgICAgIH0sCiAgICAgICAgImsi
+OiB7CiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiU3ltbWV0cmljIGtleSIs
+CiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgfSwKICAgICAg
+ICAia2lkIjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBcImtp
+ZFwiIChrZXkgSUQpIHBhcmFtZXRlciBpcyB1c2VkIHRvIG1hdGNoIGEgc3Bl
+Y2lmaWMga2V5LiAgVGhpc1xuaXMgdXNlZCwgZm9yIGluc3RhbmNlLCB0byBj
+aG9vc2UgYW1vbmcgYSBzZXQgb2Yga2V5cyB3aXRoaW4gYSBKV0sgU2V0XG5k
+dXJpbmcga2V5IHJvbGxvdmVyLiAgVGhlIHN0cnVjdHVyZSBvZiB0aGUgXCJr
+aWRcIiB2YWx1ZSBpc1xudW5zcGVjaWZpZWQuICBXaGVuIFwia2lkXCIgdmFs
+dWVzIGFyZSB1c2VkIHdpdGhpbiBhIEpXSyBTZXQsIGRpZmZlcmVudFxua2V5
+cyB3aXRoaW4gdGhlIEpXSyBTZXQgU0hPVUxEIHVzZSBkaXN0aW5jdCBcImtp
+ZFwiIHZhbHVlcy4gIChPbmVcbmV4YW1wbGUgaW4gd2hpY2ggZGlmZmVyZW50
+IGtleXMgbWlnaHQgdXNlIHRoZSBzYW1lIFwia2lkXCIgdmFsdWUgaXMgaWZc
+bnRoZXkgaGF2ZSBkaWZmZXJlbnQgXCJrdHlcIiAoa2V5IHR5cGUpIHZhbHVl
+cyBidXQgYXJlIGNvbnNpZGVyZWQgdG8gYmVcbmVxdWl2YWxlbnQgYWx0ZXJu
+YXRpdmVzIGJ5IHRoZSBhcHBsaWNhdGlvbiB1c2luZyB0aGVtLikgIFRoZSBc
+ImtpZFwiXG52YWx1ZSBpcyBhIGNhc2Utc2Vuc2l0aXZlIHN0cmluZy4iLAog
+ICAgICAgICAgInR5cGUiOiAic3RyaW5nIgogICAgICAgIH0sCiAgICAgICAg
+Imt0eSI6IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgXCJrdHlc
+IiAoa2V5IHR5cGUpIHBhcmFtZXRlciBpZGVudGlmaWVzIHRoZSBjcnlwdG9n
+cmFwaGljIGFsZ29yaXRobVxuZmFtaWx5IHVzZWQgd2l0aCB0aGUga2V5LCBz
+dWNoIGFzIFwiUlNBXCIgb3IgXCJFQ1wiLiBcImt0eVwiIHZhbHVlcyBzaG91
+bGRcbmVpdGhlciBiZSByZWdpc3RlcmVkIGluIHRoZSBJQU5BIFwiSlNPTiBX
+ZWIgS2V5IFR5cGVzXCIgcmVnaXN0cnlcbmVzdGFibGlzaGVkIGJ5IFtKV0Fd
+IG9yIGJlIGEgdmFsdWUgdGhhdCBjb250YWlucyBhIENvbGxpc2lvbi1cblJl
+c2lzdGFudCBOYW1lLiAgVGhlIFwia3R5XCIgdmFsdWUgaXMgYSBjYXNlLXNl
+bnNpdGl2ZSBzdHJpbmcuIiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIK
+ICAgICAgICB9LAogICAgICAgICJuIjogewogICAgICAgICAgImRlc2NyaXB0
+aW9uIjogIlJTQSBtb2R1bHVzLCBpbiBCYXNlNjQiLAogICAgICAgICAgInR5
+cGUiOiAic3RyaW5nIgogICAgICAgIH0sCiAgICAgICAgInAiOiB7CiAgICAg
+ICAgICAiZGVzY3JpcHRpb24iOiAiUlNBIHNlY3JldCBwcmltZSIsCiAgICAg
+ICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgfSwKICAgICAgICAicSI6
+IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJSU0Egc2VjcmV0IHByaW1l
+LCB3aXRoIHAgPCBxIiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIKICAg
+ICAgICB9LAogICAgICAgICJxaSI6IHsKICAgICAgICAgICJkZXNjcmlwdGlv
+biI6ICJSU0EgUHJpdmF0ZSBLZXkgUGFyYW1ldGVyIiwKICAgICAgICAgICJ0
+eXBlIjogInN0cmluZyIKICAgICAgICB9LAogICAgICAgICJ1c2UiOiB7CiAg
+ICAgICAgICAiZGVzY3JpcHRpb24iOiAiVXNlIChcInB1YmxpYyBrZXkgdXNl
+XCIpIGlkZW50aWZpZXMgdGhlIGludGVuZGVkIHVzZSBvZlxudGhlIHB1Ymxp
+YyBrZXkuIFRoZSBcInVzZVwiIHBhcmFtZXRlciBpcyBlbXBsb3llZCB0byBp
+bmRpY2F0ZSB3aGV0aGVyXG5hIHB1YmxpYyBrZXkgaXMgdXNlZCBmb3IgZW5j
+cnlwdGluZyBkYXRhIG9yIHZlcmlmeWluZyB0aGUgc2lnbmF0dXJlXG5vbiBk
+YXRhLiBWYWx1ZXMgYXJlIGNvbW1vbmx5IFwic2lnXCIgKHNpZ25hdHVyZSkg
+b3IgXCJlbmNcIiAoZW5jcnlwdGlvbikuIiwKICAgICAgICAgICJ0eXBlIjog
+InN0cmluZyIKICAgICAgICB9LAogICAgICAgICJ4IjogewogICAgICAgICAg
+ImRlc2NyaXB0aW9uIjogIlggY29vcmRpbmF0ZSBmb3IgdGhlIEVsbGlwdGlj
+IEN1cnZlIHBvaW50IiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIKICAg
+ICAgICB9LAogICAgICAgICJ4NWMiOiB7CiAgICAgICAgICAiZGVzY3JpcHRp
+b24iOiAiVGhlIFwieDVjXCIgKFguNTA5IGNlcnRpZmljYXRlIGNoYWluKSBw
+YXJhbWV0ZXIgY29udGFpbnMgYSBjaGFpbiBvZiBvbmVcbm9yIG1vcmUgUEtJ
+WCBjZXJ0aWZpY2F0ZXMgW1JGQzUyODBdLiAgVGhlIGNlcnRpZmljYXRlIGNo
+YWluIGlzXG5yZXByZXNlbnRlZCBhcyBhIEpTT04gYXJyYXkgb2YgY2VydGlm
+aWNhdGUgdmFsdWUgc3RyaW5ncy4gIEVhY2hcbnN0cmluZyBpbiB0aGUgYXJy
+YXkgaXMgYSBiYXNlNjQtZW5jb2RlZCAoU2VjdGlvbiA0IG9mIFtSRkM0NjQ4
+XSAtLVxubm90IGJhc2U2NHVybC1lbmNvZGVkKSBERVIgW0lUVS5YNjkwLjE5
+OTRdIFBLSVggY2VydGlmaWNhdGUgdmFsdWUuXG5UaGUgUEtJWCBjZXJ0aWZp
+Y2F0ZSBjb250YWluaW5nIHRoZSBrZXkgdmFsdWUgTVVTVCBiZSB0aGUgZmly
+c3RcbmNlcnRpZmljYXRlLiIsCiAgICAgICAgICAidHlwZSI6ICJhcnJheSIs
+CiAgICAgICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICJ0eXBlIjogInN0
+cmluZyIKICAgICAgICAgIH0KICAgICAgICB9LAogICAgICAgICJ5Ijogewog
+ICAgICAgICAgImRlc2NyaXB0aW9uIjogIlkgY29vcmRpbmF0ZSBmb3IgdGhl
+IEVsbGlwdGljIEN1cnZlIHBvaW50IiwKICAgICAgICAgICJ0eXBlIjogInN0
+cmluZyIKICAgICAgICB9CiAgICAgIH0KICAgIH0sCiAgICAiSlNPTldlYktl
+eVNldCI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3Bl
+cnRpZXMiOiB7CiAgICAgICAgImtleXMiOiB7CiAgICAgICAgICAiZGVzY3Jp
+cHRpb24iOiAiVGhlIHZhbHVlIG9mIHRoZSBcImtleXNcIiBwYXJhbWV0ZXIg
+aXMgYW4gYXJyYXkgb2YgSldLIHZhbHVlcy4gIEJ5XG5kZWZhdWx0LCB0aGUg
+b3JkZXIgb2YgdGhlIEpXSyB2YWx1ZXMgd2l0aGluIHRoZSBhcnJheSBkb2Vz
+IG5vdCBpbXBseVxuYW4gb3JkZXIgb2YgcHJlZmVyZW5jZSBhbW9uZyB0aGVt
+LCBhbHRob3VnaCBhcHBsaWNhdGlvbnMgb2YgSldLIFNldHNcbmNhbiBjaG9v
+c2UgdG8gYXNzaWduIGEgbWVhbmluZyB0byB0aGUgb3JkZXIgZm9yIHRoZWly
+IHB1cnBvc2VzLCBpZlxuZGVzaXJlZC4iLAogICAgICAgICAgInR5cGUiOiAi
+YXJyYXkiLAogICAgICAgICAgIml0ZW1zIjogewogICAgICAgICAgICAiJHJl
+ZiI6ICIjL2RlZmluaXRpb25zL0pTT05XZWJLZXkiCiAgICAgICAgICB9LAog
+ICAgICAgICAgIngtbXMtaWRlbnRpZmllcnMiOiBbXQogICAgICAgIH0KICAg
+ICAgfQogICAgfQogIH0KfQo=

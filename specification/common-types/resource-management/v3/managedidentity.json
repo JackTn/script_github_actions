@@ -1,113 +1,85 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "version": "3.0",
-    "title": "Common types"
-  },
-  "paths": {},
-  "definitions": {
-    "UserAssignedIdentities": {
-      "title": "User-Assigned Identities",
-      "description": "The set of user assigned identities associated with the resource. The userAssignedIdentities dictionary keys will be ARM resource ids in the form: '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}. The dictionary values can be empty objects ({}) in requests.",
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/UserAssignedIdentity"
-      }
-    },
-    "UserAssignedIdentity": {
-      "type": "object",
-      "description": "User assigned identity properties",
-      "properties": {
-        "principalId": {
-          "description": "The principal ID of the assigned identity.",
-          "format": "uuid",
-          "type": "string",
-          "readOnly": true
-        },
-        "clientId": {
-          "description": "The client ID of the assigned identity.",
-          "format": "uuid",
-          "type": "string",
-          "readOnly": true
-        }
-      }
-    },
-    "ManagedServiceIdentityType": {
-      "description": "Type of managed service identity (where both SystemAssigned and UserAssigned types are allowed).",
-      "enum": [
-        "None",
-        "SystemAssigned",
-        "UserAssigned",
-        "SystemAssigned,UserAssigned"
-      ],
-      "type": "string",
-      "x-ms-enum": {
-        "name": "ManagedServiceIdentityType",
-        "modelAsString": true
-      }
-    },
-    "ManagedServiceIdentity": {
-      "description": "Managed service identity (system assigned and/or user assigned identities)",
-      "type": "object",
-      "properties": {
-        "principalId": {
-          "readOnly": true,
-          "format": "uuid",
-          "type": "string",
-          "description": "The service principal ID of the system assigned identity. This property will only be provided for a system assigned identity."
-        },
-        "tenantId": {
-          "readOnly": true,
-          "format": "uuid",
-          "type": "string",
-          "description": "The tenant ID of the system assigned identity. This property will only be provided for a system assigned identity."
-        },
-        "type": {
-          "$ref": "#/definitions/ManagedServiceIdentityType"
-        },
-        "userAssignedIdentities": {
-          "$ref": "#/definitions/UserAssignedIdentities"
-        }
-      },
-      "required": [
-        "type"
-      ]
-    },
-    "SystemAssignedServiceIdentityType": {
-      "description": "Type of managed service identity (either system assigned, or none).",
-      "enum": [
-        "None",
-        "SystemAssigned"
-      ],
-      "type": "string",
-      "x-ms-enum": {
-        "name": "SystemAssignedServiceIdentityType",
-        "modelAsString": true
-      }
-    },
-    "SystemAssignedServiceIdentity": {
-      "description": "Managed service identity (either system assigned, or none)",
-      "type": "object",
-      "properties": {
-        "principalId": {
-          "readOnly": true,
-          "format": "uuid",
-          "type": "string",
-          "description": "The service principal ID of the system assigned identity. This property will only be provided for a system assigned identity."
-        },
-        "tenantId": {
-          "readOnly": true,
-          "format": "uuid",
-          "type": "string",
-          "description": "The tenant ID of the system assigned identity. This property will only be provided for a system assigned identity."
-        },
-        "type": {
-          "$ref": "#/definitions/SystemAssignedServiceIdentityType"
-        }
-      },
-      "required": [
-        "type"
-      ]
-    }
-  }
-}
+ewogICJzd2FnZ2VyIjogIjIuMCIsCiAgImluZm8iOiB7CiAgICAidmVyc2lv
+biI6ICIzLjAiLAogICAgInRpdGxlIjogIkNvbW1vbiB0eXBlcyIKICB9LAog
+ICJwYXRocyI6IHt9LAogICJkZWZpbml0aW9ucyI6IHsKICAgICJVc2VyQXNz
+aWduZWRJZGVudGl0aWVzIjogewogICAgICAidGl0bGUiOiAiVXNlci1Bc3Np
+Z25lZCBJZGVudGl0aWVzIiwKICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBz
+ZXQgb2YgdXNlciBhc3NpZ25lZCBpZGVudGl0aWVzIGFzc29jaWF0ZWQgd2l0
+aCB0aGUgcmVzb3VyY2UuIFRoZSB1c2VyQXNzaWduZWRJZGVudGl0aWVzIGRp
+Y3Rpb25hcnkga2V5cyB3aWxsIGJlIEFSTSByZXNvdXJjZSBpZHMgaW4gdGhl
+IGZvcm06ICcvc3Vic2NyaXB0aW9ucy97c3Vic2NyaXB0aW9uSWR9L3Jlc291
+cmNlR3JvdXBzL3tyZXNvdXJjZUdyb3VwTmFtZX0vcHJvdmlkZXJzL01pY3Jv
+c29mdC5NYW5hZ2VkSWRlbnRpdHkvdXNlckFzc2lnbmVkSWRlbnRpdGllcy97
+aWRlbnRpdHlOYW1lfS4gVGhlIGRpY3Rpb25hcnkgdmFsdWVzIGNhbiBiZSBl
+bXB0eSBvYmplY3RzICh7fSkgaW4gcmVxdWVzdHMuIiwKICAgICAgInR5cGUi
+OiAib2JqZWN0IiwKICAgICAgImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjogewog
+ICAgICAgICIkcmVmIjogIiMvZGVmaW5pdGlvbnMvVXNlckFzc2lnbmVkSWRl
+bnRpdHkiCiAgICAgIH0KICAgIH0sCiAgICAiVXNlckFzc2lnbmVkSWRlbnRp
+dHkiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJkZXNjcmlw
+dGlvbiI6ICJVc2VyIGFzc2lnbmVkIGlkZW50aXR5IHByb3BlcnRpZXMiLAog
+ICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAicHJpbmNpcGFsSWQiOiB7
+CiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIHByaW5jaXBhbCBJRCBv
+ZiB0aGUgYXNzaWduZWQgaWRlbnRpdHkuIiwKICAgICAgICAgICJmb3JtYXQi
+OiAidXVpZCIsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAg
+ICAgInJlYWRPbmx5IjogdHJ1ZQogICAgICAgIH0sCiAgICAgICAgImNsaWVu
+dElkIjogewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBjbGllbnQg
+SUQgb2YgdGhlIGFzc2lnbmVkIGlkZW50aXR5LiIsCiAgICAgICAgICAiZm9y
+bWF0IjogInV1aWQiLAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAg
+ICAgICAgICJyZWFkT25seSI6IHRydWUKICAgICAgICB9CiAgICAgIH0KICAg
+IH0sCiAgICAiTWFuYWdlZFNlcnZpY2VJZGVudGl0eVR5cGUiOiB7CiAgICAg
+ICJkZXNjcmlwdGlvbiI6ICJUeXBlIG9mIG1hbmFnZWQgc2VydmljZSBpZGVu
+dGl0eSAod2hlcmUgYm90aCBTeXN0ZW1Bc3NpZ25lZCBhbmQgVXNlckFzc2ln
+bmVkIHR5cGVzIGFyZSBhbGxvd2VkKS4iLAogICAgICAiZW51bSI6IFsKICAg
+ICAgICAiTm9uZSIsCiAgICAgICAgIlN5c3RlbUFzc2lnbmVkIiwKICAgICAg
+ICAiVXNlckFzc2lnbmVkIiwKICAgICAgICAiU3lzdGVtQXNzaWduZWQsVXNl
+ckFzc2lnbmVkIgogICAgICBdLAogICAgICAidHlwZSI6ICJzdHJpbmciLAog
+ICAgICAieC1tcy1lbnVtIjogewogICAgICAgICJuYW1lIjogIk1hbmFnZWRT
+ZXJ2aWNlSWRlbnRpdHlUeXBlIiwKICAgICAgICAibW9kZWxBc1N0cmluZyI6
+IHRydWUKICAgICAgfQogICAgfSwKICAgICJNYW5hZ2VkU2VydmljZUlkZW50
+aXR5IjogewogICAgICAiZGVzY3JpcHRpb24iOiAiTWFuYWdlZCBzZXJ2aWNl
+IGlkZW50aXR5IChzeXN0ZW0gYXNzaWduZWQgYW5kL29yIHVzZXIgYXNzaWdu
+ZWQgaWRlbnRpdGllcykiLAogICAgICAidHlwZSI6ICJvYmplY3QiLAogICAg
+ICAicHJvcGVydGllcyI6IHsKICAgICAgICAicHJpbmNpcGFsSWQiOiB7CiAg
+ICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAogICAgICAgICAgImZvcm1hdCI6
+ICJ1dWlkIiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAg
+ICAiZGVzY3JpcHRpb24iOiAiVGhlIHNlcnZpY2UgcHJpbmNpcGFsIElEIG9m
+IHRoZSBzeXN0ZW0gYXNzaWduZWQgaWRlbnRpdHkuIFRoaXMgcHJvcGVydHkg
+d2lsbCBvbmx5IGJlIHByb3ZpZGVkIGZvciBhIHN5c3RlbSBhc3NpZ25lZCBp
+ZGVudGl0eS4iCiAgICAgICAgfSwKICAgICAgICAidGVuYW50SWQiOiB7CiAg
+ICAgICAgICAicmVhZE9ubHkiOiB0cnVlLAogICAgICAgICAgImZvcm1hdCI6
+ICJ1dWlkIiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAg
+ICAiZGVzY3JpcHRpb24iOiAiVGhlIHRlbmFudCBJRCBvZiB0aGUgc3lzdGVt
+IGFzc2lnbmVkIGlkZW50aXR5LiBUaGlzIHByb3BlcnR5IHdpbGwgb25seSBi
+ZSBwcm92aWRlZCBmb3IgYSBzeXN0ZW0gYXNzaWduZWQgaWRlbnRpdHkuIgog
+ICAgICAgIH0sCiAgICAgICAgInR5cGUiOiB7CiAgICAgICAgICAiJHJlZiI6
+ICIjL2RlZmluaXRpb25zL01hbmFnZWRTZXJ2aWNlSWRlbnRpdHlUeXBlIgog
+ICAgICAgIH0sCiAgICAgICAgInVzZXJBc3NpZ25lZElkZW50aXRpZXMiOiB7
+CiAgICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL1VzZXJBc3NpZ25l
+ZElkZW50aXRpZXMiCiAgICAgICAgfQogICAgICB9LAogICAgICAicmVxdWly
+ZWQiOiBbCiAgICAgICAgInR5cGUiCiAgICAgIF0KICAgIH0sCiAgICAiU3lz
+dGVtQXNzaWduZWRTZXJ2aWNlSWRlbnRpdHlUeXBlIjogewogICAgICAiZGVz
+Y3JpcHRpb24iOiAiVHlwZSBvZiBtYW5hZ2VkIHNlcnZpY2UgaWRlbnRpdHkg
+KGVpdGhlciBzeXN0ZW0gYXNzaWduZWQsIG9yIG5vbmUpLiIsCiAgICAgICJl
+bnVtIjogWwogICAgICAgICJOb25lIiwKICAgICAgICAiU3lzdGVtQXNzaWdu
+ZWQiCiAgICAgIF0sCiAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICJ4
+LW1zLWVudW0iOiB7CiAgICAgICAgIm5hbWUiOiAiU3lzdGVtQXNzaWduZWRT
+ZXJ2aWNlSWRlbnRpdHlUeXBlIiwKICAgICAgICAibW9kZWxBc1N0cmluZyI6
+IHRydWUKICAgICAgfQogICAgfSwKICAgICJTeXN0ZW1Bc3NpZ25lZFNlcnZp
+Y2VJZGVudGl0eSI6IHsKICAgICAgImRlc2NyaXB0aW9uIjogIk1hbmFnZWQg
+c2VydmljZSBpZGVudGl0eSAoZWl0aGVyIHN5c3RlbSBhc3NpZ25lZCwgb3Ig
+bm9uZSkiLAogICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAicHJvcGVy
+dGllcyI6IHsKICAgICAgICAicHJpbmNpcGFsSWQiOiB7CiAgICAgICAgICAi
+cmVhZE9ubHkiOiB0cnVlLAogICAgICAgICAgImZvcm1hdCI6ICJ1dWlkIiwK
+ICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3Jp
+cHRpb24iOiAiVGhlIHNlcnZpY2UgcHJpbmNpcGFsIElEIG9mIHRoZSBzeXN0
+ZW0gYXNzaWduZWQgaWRlbnRpdHkuIFRoaXMgcHJvcGVydHkgd2lsbCBvbmx5
+IGJlIHByb3ZpZGVkIGZvciBhIHN5c3RlbSBhc3NpZ25lZCBpZGVudGl0eS4i
+CiAgICAgICAgfSwKICAgICAgICAidGVuYW50SWQiOiB7CiAgICAgICAgICAi
+cmVhZE9ubHkiOiB0cnVlLAogICAgICAgICAgImZvcm1hdCI6ICJ1dWlkIiwK
+ICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAiZGVzY3Jp
+cHRpb24iOiAiVGhlIHRlbmFudCBJRCBvZiB0aGUgc3lzdGVtIGFzc2lnbmVk
+IGlkZW50aXR5LiBUaGlzIHByb3BlcnR5IHdpbGwgb25seSBiZSBwcm92aWRl
+ZCBmb3IgYSBzeXN0ZW0gYXNzaWduZWQgaWRlbnRpdHkuIgogICAgICAgIH0s
+CiAgICAgICAgInR5cGUiOiB7CiAgICAgICAgICAiJHJlZiI6ICIjL2RlZmlu
+aXRpb25zL1N5c3RlbUFzc2lnbmVkU2VydmljZUlkZW50aXR5VHlwZSIKICAg
+ICAgICB9CiAgICAgIH0sCiAgICAgICJyZXF1aXJlZCI6IFsKICAgICAgICAi
+dHlwZSIKICAgICAgXQogICAgfQogIH0KfQo=

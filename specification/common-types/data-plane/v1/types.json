@@ -1,74 +1,44 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "version": "1.0",
-    "title": "Common types"
-  },
-  "paths": {},
-  "definitions": {
-    "ErrorDetail": {
-      "type": "object",
-      "description": "The error detail.",
-      "properties": {
-        "code": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The error code."
-        },
-        "message": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The error message."
-        },
-        "target": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The error target."
-        },
-        "details": {
-          "readOnly": true,
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ErrorDetail"
-          },
-          "description": "The error details."
-        },
-        "additionalInfo": {
-          "readOnly": true,
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ErrorAdditionalInfo"
-          },
-          "description": "The error additional info."
-        }
-      }
-    },
-    "ErrorResponse": {
-      "type": "object",
-      "title": "Error response",
-      "description": "Common error response for all Azure Resource Manager APIs to return error details for failed operations. (This also follows the OData error response format.).",
-      "properties": {
-        "error": {
-          "description": "The error object.",
-          "$ref": "#/definitions/ErrorDetail"
-        }
-      }
-    },
-    "ErrorAdditionalInfo": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The additional info type."
-        },
-        "info": {
-          "readOnly": true,
-          "type": "object",
-          "description": "The additional info."
-        }
-      },
-      "description": "The resource management error additional info."
-    }
-  }
-}
+ewogICJzd2FnZ2VyIjogIjIuMCIsCiAgImluZm8iOiB7CiAgICAidmVyc2lv
+biI6ICIxLjAiLAogICAgInRpdGxlIjogIkNvbW1vbiB0eXBlcyIKICB9LAog
+ICJwYXRocyI6IHt9LAogICJkZWZpbml0aW9ucyI6IHsKICAgICJFcnJvckRl
+dGFpbCI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgImRlc2Ny
+aXB0aW9uIjogIlRoZSBlcnJvciBkZXRhaWwuIiwKICAgICAgInByb3BlcnRp
+ZXMiOiB7CiAgICAgICAgImNvZGUiOiB7CiAgICAgICAgICAicmVhZE9ubHki
+OiB0cnVlLAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAg
+ICJkZXNjcmlwdGlvbiI6ICJUaGUgZXJyb3IgY29kZS4iCiAgICAgICAgfSwK
+ICAgICAgICAibWVzc2FnZSI6IHsKICAgICAgICAgICJyZWFkT25seSI6IHRy
+dWUsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgImRl
+c2NyaXB0aW9uIjogIlRoZSBlcnJvciBtZXNzYWdlLiIKICAgICAgICB9LAog
+ICAgICAgICJ0YXJnZXQiOiB7CiAgICAgICAgICAicmVhZE9ubHkiOiB0cnVl
+LAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJkZXNj
+cmlwdGlvbiI6ICJUaGUgZXJyb3IgdGFyZ2V0LiIKICAgICAgICB9LAogICAg
+ICAgICJkZXRhaWxzIjogewogICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZSwK
+ICAgICAgICAgICJ0eXBlIjogImFycmF5IiwKICAgICAgICAgICJpdGVtcyI6
+IHsKICAgICAgICAgICAgIiRyZWYiOiAiIy9kZWZpbml0aW9ucy9FcnJvckRl
+dGFpbCIKICAgICAgICAgIH0sCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAi
+VGhlIGVycm9yIGRldGFpbHMuIgogICAgICAgIH0sCiAgICAgICAgImFkZGl0
+aW9uYWxJbmZvIjogewogICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZSwKICAg
+ICAgICAgICJ0eXBlIjogImFycmF5IiwKICAgICAgICAgICJpdGVtcyI6IHsK
+ICAgICAgICAgICAgIiRyZWYiOiAiIy9kZWZpbml0aW9ucy9FcnJvckFkZGl0
+aW9uYWxJbmZvIgogICAgICAgICAgfSwKICAgICAgICAgICJkZXNjcmlwdGlv
+biI6ICJUaGUgZXJyb3IgYWRkaXRpb25hbCBpbmZvLiIKICAgICAgICB9CiAg
+ICAgIH0KICAgIH0sCiAgICAiRXJyb3JSZXNwb25zZSI6IHsKICAgICAgInR5
+cGUiOiAib2JqZWN0IiwKICAgICAgInRpdGxlIjogIkVycm9yIHJlc3BvbnNl
+IiwKICAgICAgImRlc2NyaXB0aW9uIjogIkNvbW1vbiBlcnJvciByZXNwb25z
+ZSBmb3IgYWxsIEF6dXJlIFJlc291cmNlIE1hbmFnZXIgQVBJcyB0byByZXR1
+cm4gZXJyb3IgZGV0YWlscyBmb3IgZmFpbGVkIG9wZXJhdGlvbnMuIChUaGlz
+IGFsc28gZm9sbG93cyB0aGUgT0RhdGEgZXJyb3IgcmVzcG9uc2UgZm9ybWF0
+LikuIiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgImVycm9yIjog
+ewogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBlcnJvciBvYmplY3Qu
+IiwKICAgICAgICAgICIkcmVmIjogIiMvZGVmaW5pdGlvbnMvRXJyb3JEZXRh
+aWwiCiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgIkVycm9yQWRkaXRp
+b25hbEluZm8iOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJw
+cm9wZXJ0aWVzIjogewogICAgICAgICJ0eXBlIjogewogICAgICAgICAgInJl
+YWRPbmx5IjogdHJ1ZSwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAg
+ICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIGFkZGl0aW9uYWwgaW5mbyB0
+eXBlLiIKICAgICAgICB9LAogICAgICAgICJpbmZvIjogewogICAgICAgICAg
+InJlYWRPbmx5IjogdHJ1ZSwKICAgICAgICAgICJ0eXBlIjogIm9iamVjdCIs
+CiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIGFkZGl0aW9uYWwgaW5m
+by4iCiAgICAgICAgfQogICAgICB9LAogICAgICAiZGVzY3JpcHRpb24iOiAi
+VGhlIHJlc291cmNlIG1hbmFnZW1lbnQgZXJyb3IgYWRkaXRpb25hbCBpbmZv
+LiIKICAgIH0KICB9Cn0K

@@ -1,182 +1,124 @@
-{
-  "swagger": "2.0",
-  "info": {
-    "version": "2.0",
-    "title": "Common types"
-  },
-  "paths": {},
-  "definitions": {
-    "PrivateEndpoint": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "readOnly": true,
-          "type": "string",
-          "description": "The ARM identifier for Private Endpoint"
-        }
-      },
-      "description": "The Private Endpoint resource."
-    },
-    "PrivateEndpointConnection": {
-      "type": "object",
-      "properties": {
-        "properties": {
-          "$ref": "#/definitions/PrivateEndpointConnectionProperties",
-          "x-ms-client-flatten": true,
-          "description": "Resource properties."
-        }
-      },
-      "allOf": [
-        {
-          "$ref": "./types.json#/definitions/Resource"
-        }
-      ],
-      "description": "The Private Endpoint Connection resource."
-    },
-    "PrivateEndpointConnectionProperties": {
-      "type": "object",
-      "properties": {
-        "privateEndpoint": {
-          "$ref": "#/definitions/PrivateEndpoint",
-          "description": "The resource of private end point."
-        },
-        "privateLinkServiceConnectionState": {
-          "$ref": "#/definitions/PrivateLinkServiceConnectionState",
-          "description": "A collection of information about the state of the connection between service consumer and provider."
-        },
-        "provisioningState": {
-          "$ref": "#/definitions/PrivateEndpointConnectionProvisioningState",
-          "description": "The provisioning state of the private endpoint connection resource."
-        }
-      },
-      "required": [
-        "privateLinkServiceConnectionState"
-      ],
-      "description": "Properties of the PrivateEndpointConnectProperties."
-    },
-    "PrivateLinkServiceConnectionState": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "$ref": "#/definitions/PrivateEndpointServiceConnectionStatus",
-          "description": "Indicates whether the connection has been Approved/Rejected/Removed by the owner of the service."
-        },
-        "description": {
-          "type": "string",
-          "description": "The reason for approval/rejection of the connection."
-        },
-        "actionsRequired": {
-          "type": "string",
-          "description": "A message indicating if changes on the service provider require any updates on the consumer."
-        }
-      },
-      "description": "A collection of information about the state of the connection between service consumer and provider."
-    },
-    "PrivateEndpointServiceConnectionStatus": {
-      "type": "string",
-      "description": "The private endpoint connection status.",
-      "enum": [
-        "Pending",
-        "Approved",
-        "Rejected"
-      ],
-      "x-ms-enum": {
-        "name": "PrivateEndpointServiceConnectionStatus",
-        "modelAsString": true
-      }
-    },
-    "PrivateEndpointConnectionProvisioningState": {
-      "type": "string",
-      "readOnly": true,
-      "description": "The current provisioning state.",
-      "enum": [
-        "Succeeded",
-        "Creating",
-        "Deleting",
-        "Failed"
-      ],
-      "x-ms-enum": {
-        "name": "PrivateEndpointConnectionProvisioningState",
-        "modelAsString": true
-      }
-    },
-    "PrivateLinkResource": {
-      "type": "object",
-      "properties": {
-        "properties": {
-          "$ref": "#/definitions/PrivateLinkResourceProperties",
-          "description": "Resource properties.",
-          "x-ms-client-flatten": true
-        }
-      },
-      "allOf": [
-        {
-          "$ref": "./types.json#/definitions/Resource"
-        }
-      ],
-      "description": "A private link resource"
-    },
-    "PrivateLinkResourceProperties": {
-      "type": "object",
-      "properties": {
-        "groupId": {
-          "description": "The private link resource group id.",
-          "type": "string",
-          "readOnly": true
-        },
-        "requiredMembers": {
-          "description": "The private link resource required member names.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "readOnly": true
-        },
-        "requiredZoneNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The private link resource Private link DNS zone name."
-        }
-      },
-      "description": "Properties of a private link resource."
-    },
-    "PrivateEndpointConnectionListResult": {
-      "type": "object",
-      "properties": {
-        "value": {
-          "type": "array",
-          "description": "Array of private endpoint connections",
-          "items": {
-            "$ref": "#/definitions/PrivateEndpointConnection"
-          }
-        }
-      },
-      "description": "List of private endpoint connection associated with the specified storage account"
-    },
-    "PrivateLinkResourceListResult": {
-      "type": "object",
-      "properties": {
-        "value": {
-          "type": "array",
-          "description": "Array of private link resources",
-          "items": {
-            "$ref": "#/definitions/PrivateLinkResource"
-          }
-        }
-      },
-      "description": "A list of private link resources"
-    }
-  },
-  "parameters": {
-    "PrivateEndpointConnectionName": {
-      "name": "privateEndpointConnectionName",
-      "in": "path",
-      "required": true,
-      "type": "string",
-      "description": "The name of the private endpoint connection associated with the Azure resource",
-      "x-ms-parameter-location": "method"
-    }
-  }
-}
+ewogICJzd2FnZ2VyIjogIjIuMCIsCiAgImluZm8iOiB7CiAgICAidmVyc2lv
+biI6ICIyLjAiLAogICAgInRpdGxlIjogIkNvbW1vbiB0eXBlcyIKICB9LAog
+ICJwYXRocyI6IHt9LAogICJkZWZpbml0aW9ucyI6IHsKICAgICJQcml2YXRl
+RW5kcG9pbnQiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJw
+cm9wZXJ0aWVzIjogewogICAgICAgICJpZCI6IHsKICAgICAgICAgICJyZWFk
+T25seSI6IHRydWUsCiAgICAgICAgICAidHlwZSI6ICJzdHJpbmciLAogICAg
+ICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBBUk0gaWRlbnRpZmllciBmb3Ig
+UHJpdmF0ZSBFbmRwb2ludCIKICAgICAgICB9CiAgICAgIH0sCiAgICAgICJk
+ZXNjcmlwdGlvbiI6ICJUaGUgUHJpdmF0ZSBFbmRwb2ludCByZXNvdXJjZS4i
+CiAgICB9LAogICAgIlByaXZhdGVFbmRwb2ludENvbm5lY3Rpb24iOiB7CiAg
+ICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJwcm9wZXJ0aWVzIjogewog
+ICAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICAgIiRyZWYiOiAiIy9k
+ZWZpbml0aW9ucy9Qcml2YXRlRW5kcG9pbnRDb25uZWN0aW9uUHJvcGVydGll
+cyIsCiAgICAgICAgICAieC1tcy1jbGllbnQtZmxhdHRlbiI6IHRydWUsCiAg
+ICAgICAgICAiZGVzY3JpcHRpb24iOiAiUmVzb3VyY2UgcHJvcGVydGllcy4i
+CiAgICAgICAgfQogICAgICB9LAogICAgICAiYWxsT2YiOiBbCiAgICAgICAg
+ewogICAgICAgICAgIiRyZWYiOiAiLi90eXBlcy5qc29uIy9kZWZpbml0aW9u
+cy9SZXNvdXJjZSIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICJkZXNjcmlw
+dGlvbiI6ICJUaGUgUHJpdmF0ZSBFbmRwb2ludCBDb25uZWN0aW9uIHJlc291
+cmNlLiIKICAgIH0sCiAgICAiUHJpdmF0ZUVuZHBvaW50Q29ubmVjdGlvblBy
+b3BlcnRpZXMiOiB7CiAgICAgICJ0eXBlIjogIm9iamVjdCIsCiAgICAgICJw
+cm9wZXJ0aWVzIjogewogICAgICAgICJwcml2YXRlRW5kcG9pbnQiOiB7CiAg
+ICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL1ByaXZhdGVFbmRwb2lu
+dCIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIHJlc291cmNlIG9m
+IHByaXZhdGUgZW5kIHBvaW50LiIKICAgICAgICB9LAogICAgICAgICJwcml2
+YXRlTGlua1NlcnZpY2VDb25uZWN0aW9uU3RhdGUiOiB7CiAgICAgICAgICAi
+JHJlZiI6ICIjL2RlZmluaXRpb25zL1ByaXZhdGVMaW5rU2VydmljZUNvbm5l
+Y3Rpb25TdGF0ZSIsCiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiQSBjb2xs
+ZWN0aW9uIG9mIGluZm9ybWF0aW9uIGFib3V0IHRoZSBzdGF0ZSBvZiB0aGUg
+Y29ubmVjdGlvbiBiZXR3ZWVuIHNlcnZpY2UgY29uc3VtZXIgYW5kIHByb3Zp
+ZGVyLiIKICAgICAgICB9LAogICAgICAgICJwcm92aXNpb25pbmdTdGF0ZSI6
+IHsKICAgICAgICAgICIkcmVmIjogIiMvZGVmaW5pdGlvbnMvUHJpdmF0ZUVu
+ZHBvaW50Q29ubmVjdGlvblByb3Zpc2lvbmluZ1N0YXRlIiwKICAgICAgICAg
+ICJkZXNjcmlwdGlvbiI6ICJUaGUgcHJvdmlzaW9uaW5nIHN0YXRlIG9mIHRo
+ZSBwcml2YXRlIGVuZHBvaW50IGNvbm5lY3Rpb24gcmVzb3VyY2UuIgogICAg
+ICAgIH0KICAgICAgfSwKICAgICAgInJlcXVpcmVkIjogWwogICAgICAgICJw
+cml2YXRlTGlua1NlcnZpY2VDb25uZWN0aW9uU3RhdGUiCiAgICAgIF0sCiAg
+ICAgICJkZXNjcmlwdGlvbiI6ICJQcm9wZXJ0aWVzIG9mIHRoZSBQcml2YXRl
+RW5kcG9pbnRDb25uZWN0UHJvcGVydGllcy4iCiAgICB9LAogICAgIlByaXZh
+dGVMaW5rU2VydmljZUNvbm5lY3Rpb25TdGF0ZSI6IHsKICAgICAgInR5cGUi
+OiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgInN0
+YXR1cyI6IHsKICAgICAgICAgICIkcmVmIjogIiMvZGVmaW5pdGlvbnMvUHJp
+dmF0ZUVuZHBvaW50U2VydmljZUNvbm5lY3Rpb25TdGF0dXMiLAogICAgICAg
+ICAgImRlc2NyaXB0aW9uIjogIkluZGljYXRlcyB3aGV0aGVyIHRoZSBjb25u
+ZWN0aW9uIGhhcyBiZWVuIEFwcHJvdmVkL1JlamVjdGVkL1JlbW92ZWQgYnkg
+dGhlIG93bmVyIG9mIHRoZSBzZXJ2aWNlLiIKICAgICAgICB9LAogICAgICAg
+ICJkZXNjcmlwdGlvbiI6IHsKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIs
+CiAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiVGhlIHJlYXNvbiBmb3IgYXBw
+cm92YWwvcmVqZWN0aW9uIG9mIHRoZSBjb25uZWN0aW9uLiIKICAgICAgICB9
+LAogICAgICAgICJhY3Rpb25zUmVxdWlyZWQiOiB7CiAgICAgICAgICAidHlw
+ZSI6ICJzdHJpbmciLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIkEgbWVz
+c2FnZSBpbmRpY2F0aW5nIGlmIGNoYW5nZXMgb24gdGhlIHNlcnZpY2UgcHJv
+dmlkZXIgcmVxdWlyZSBhbnkgdXBkYXRlcyBvbiB0aGUgY29uc3VtZXIuIgog
+ICAgICAgIH0KICAgICAgfSwKICAgICAgImRlc2NyaXB0aW9uIjogIkEgY29s
+bGVjdGlvbiBvZiBpbmZvcm1hdGlvbiBhYm91dCB0aGUgc3RhdGUgb2YgdGhl
+IGNvbm5lY3Rpb24gYmV0d2VlbiBzZXJ2aWNlIGNvbnN1bWVyIGFuZCBwcm92
+aWRlci4iCiAgICB9LAogICAgIlByaXZhdGVFbmRwb2ludFNlcnZpY2VDb25u
+ZWN0aW9uU3RhdHVzIjogewogICAgICAidHlwZSI6ICJzdHJpbmciLAogICAg
+ICAiZGVzY3JpcHRpb24iOiAiVGhlIHByaXZhdGUgZW5kcG9pbnQgY29ubmVj
+dGlvbiBzdGF0dXMuIiwKICAgICAgImVudW0iOiBbCiAgICAgICAgIlBlbmRp
+bmciLAogICAgICAgICJBcHByb3ZlZCIsCiAgICAgICAgIlJlamVjdGVkIgog
+ICAgICBdLAogICAgICAieC1tcy1lbnVtIjogewogICAgICAgICJuYW1lIjog
+IlByaXZhdGVFbmRwb2ludFNlcnZpY2VDb25uZWN0aW9uU3RhdHVzIiwKICAg
+ICAgICAibW9kZWxBc1N0cmluZyI6IHRydWUKICAgICAgfQogICAgfSwKICAg
+ICJQcml2YXRlRW5kcG9pbnRDb25uZWN0aW9uUHJvdmlzaW9uaW5nU3RhdGUi
+OiB7CiAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICJyZWFkT25seSI6
+IHRydWUsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgY3VycmVudCBwcm92
+aXNpb25pbmcgc3RhdGUuIiwKICAgICAgImVudW0iOiBbCiAgICAgICAgIlN1
+Y2NlZWRlZCIsCiAgICAgICAgIkNyZWF0aW5nIiwKICAgICAgICAiRGVsZXRp
+bmciLAogICAgICAgICJGYWlsZWQiCiAgICAgIF0sCiAgICAgICJ4LW1zLWVu
+dW0iOiB7CiAgICAgICAgIm5hbWUiOiAiUHJpdmF0ZUVuZHBvaW50Q29ubmVj
+dGlvblByb3Zpc2lvbmluZ1N0YXRlIiwKICAgICAgICAibW9kZWxBc1N0cmlu
+ZyI6IHRydWUKICAgICAgfQogICAgfSwKICAgICJQcml2YXRlTGlua1Jlc291
+cmNlIjogewogICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAicHJvcGVy
+dGllcyI6IHsKICAgICAgICAicHJvcGVydGllcyI6IHsKICAgICAgICAgICIk
+cmVmIjogIiMvZGVmaW5pdGlvbnMvUHJpdmF0ZUxpbmtSZXNvdXJjZVByb3Bl
+cnRpZXMiLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlJlc291cmNlIHBy
+b3BlcnRpZXMuIiwKICAgICAgICAgICJ4LW1zLWNsaWVudC1mbGF0dGVuIjog
+dHJ1ZQogICAgICAgIH0KICAgICAgfSwKICAgICAgImFsbE9mIjogWwogICAg
+ICAgIHsKICAgICAgICAgICIkcmVmIjogIi4vdHlwZXMuanNvbiMvZGVmaW5p
+dGlvbnMvUmVzb3VyY2UiCiAgICAgICAgfQogICAgICBdLAogICAgICAiZGVz
+Y3JpcHRpb24iOiAiQSBwcml2YXRlIGxpbmsgcmVzb3VyY2UiCiAgICB9LAog
+ICAgIlByaXZhdGVMaW5rUmVzb3VyY2VQcm9wZXJ0aWVzIjogewogICAgICAi
+dHlwZSI6ICJvYmplY3QiLAogICAgICAicHJvcGVydGllcyI6IHsKICAgICAg
+ICAiZ3JvdXBJZCI6IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUg
+cHJpdmF0ZSBsaW5rIHJlc291cmNlIGdyb3VwIGlkLiIsCiAgICAgICAgICAi
+dHlwZSI6ICJzdHJpbmciLAogICAgICAgICAgInJlYWRPbmx5IjogdHJ1ZQog
+ICAgICAgIH0sCiAgICAgICAgInJlcXVpcmVkTWVtYmVycyI6IHsKICAgICAg
+ICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgcHJpdmF0ZSBsaW5rIHJlc291cmNl
+IHJlcXVpcmVkIG1lbWJlciBuYW1lcy4iLAogICAgICAgICAgInR5cGUiOiAi
+YXJyYXkiLAogICAgICAgICAgIml0ZW1zIjogewogICAgICAgICAgICAidHlw
+ZSI6ICJzdHJpbmciCiAgICAgICAgICB9LAogICAgICAgICAgInJlYWRPbmx5
+IjogdHJ1ZQogICAgICAgIH0sCiAgICAgICAgInJlcXVpcmVkWm9uZU5hbWVz
+IjogewogICAgICAgICAgInR5cGUiOiAiYXJyYXkiLAogICAgICAgICAgIml0
+ZW1zIjogewogICAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAg
+ICB9LAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSBwcml2YXRlIGxp
+bmsgcmVzb3VyY2UgUHJpdmF0ZSBsaW5rIEROUyB6b25lIG5hbWUuIgogICAg
+ICAgIH0KICAgICAgfSwKICAgICAgImRlc2NyaXB0aW9uIjogIlByb3BlcnRp
+ZXMgb2YgYSBwcml2YXRlIGxpbmsgcmVzb3VyY2UuIgogICAgfSwKICAgICJQ
+cml2YXRlRW5kcG9pbnRDb25uZWN0aW9uTGlzdFJlc3VsdCI6IHsKICAgICAg
+InR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAg
+ICAgInZhbHVlIjogewogICAgICAgICAgInR5cGUiOiAiYXJyYXkiLAogICAg
+ICAgICAgImRlc2NyaXB0aW9uIjogIkFycmF5IG9mIHByaXZhdGUgZW5kcG9p
+bnQgY29ubmVjdGlvbnMiLAogICAgICAgICAgIml0ZW1zIjogewogICAgICAg
+ICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL1ByaXZhdGVFbmRwb2ludENv
+bm5lY3Rpb24iCiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9LAogICAg
+ICAiZGVzY3JpcHRpb24iOiAiTGlzdCBvZiBwcml2YXRlIGVuZHBvaW50IGNv
+bm5lY3Rpb24gYXNzb2NpYXRlZCB3aXRoIHRoZSBzcGVjaWZpZWQgc3RvcmFn
+ZSBhY2NvdW50IgogICAgfSwKICAgICJQcml2YXRlTGlua1Jlc291cmNlTGlz
+dFJlc3VsdCI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInBy
+b3BlcnRpZXMiOiB7CiAgICAgICAgInZhbHVlIjogewogICAgICAgICAgInR5
+cGUiOiAiYXJyYXkiLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIkFycmF5
+IG9mIHByaXZhdGUgbGluayByZXNvdXJjZXMiLAogICAgICAgICAgIml0ZW1z
+IjogewogICAgICAgICAgICAiJHJlZiI6ICIjL2RlZmluaXRpb25zL1ByaXZh
+dGVMaW5rUmVzb3VyY2UiCiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9
+LAogICAgICAiZGVzY3JpcHRpb24iOiAiQSBsaXN0IG9mIHByaXZhdGUgbGlu
+ayByZXNvdXJjZXMiCiAgICB9CiAgfSwKICAicGFyYW1ldGVycyI6IHsKICAg
+ICJQcml2YXRlRW5kcG9pbnRDb25uZWN0aW9uTmFtZSI6IHsKICAgICAgIm5h
+bWUiOiAicHJpdmF0ZUVuZHBvaW50Q29ubmVjdGlvbk5hbWUiLAogICAgICAi
+aW4iOiAicGF0aCIsCiAgICAgICJyZXF1aXJlZCI6IHRydWUsCiAgICAgICJ0
+eXBlIjogInN0cmluZyIsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgbmFt
+ZSBvZiB0aGUgcHJpdmF0ZSBlbmRwb2ludCBjb25uZWN0aW9uIGFzc29jaWF0
+ZWQgd2l0aCB0aGUgQXp1cmUgcmVzb3VyY2UiLAogICAgICAieC1tcy1wYXJh
+bWV0ZXItbG9jYXRpb24iOiAibWV0aG9kIgogICAgfQogIH0KfQo=
