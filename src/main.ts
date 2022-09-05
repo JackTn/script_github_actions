@@ -3,28 +3,7 @@ import {base64ToString, stringToBase64} from '@azure/openapi-markdown'
 import {run} from './handle'
 import * as github from '@actions/github'
 import {OctokitResponse} from '@octokit/types'
-
-export interface GitGetTreeResponseData {
-  sha: string
-  url: string
-  tree: {
-    path: string
-    mode: string
-    type: string
-    size: number
-    sha: string
-    url: string
-  }[]
-  truncated: boolean
-}
-
-export interface GitCreateTreeParamsTree {
-  path?: string
-  mode?: '100644' | '100755' | '040000' | '160000' | '120000'
-  type?: 'blob' | 'tree' | 'commit'
-  sha?: string | null
-  content?: string
-}
+import {GitCreateTreeParamsTree, GitGetTreeResponseData} from './types'
 
 // const item = {
 //   repo: {
@@ -44,6 +23,7 @@ export interface GitCreateTreeParamsTree {
 // core.info('	')
 async function exec() {
   const octokit = github.getOctokit('')
+
   // You can also pass in additional options as a second parameter to getOctokit
   // const octokit = github.getOctokit(myToken, {userAgent: "MyActionVersion1"});
 
@@ -65,13 +45,6 @@ async function exec() {
   //   core.info(`action ${action}`)
   //   core.info(`runNumber ${runNumber}`)
   //   core.info(`runId ${runId}`)
-
-  //   const allLabels = await octokit.issues.listLabelsForRepo({
-  //     owner: 'test-repo-billy',
-  //     repo: 'azure-rest-api-specs'
-  //   })
-  //   core.info(`~~~~~`)
-  //   core.info(`allLabels ${allLabels}`)
 
   const sourceBranch = 'main'
   const sourceOwner = 'JackTn'
@@ -156,7 +129,7 @@ async function exec() {
 
   const copyTree = await getTreeByLoop(loopFiles, getDefaultTree)
   core.info(`~~~~~`)
-  core.info(`getTree ${copyTree}`)
+  core.info(`copyTree ${copyTree}`)
 
   //   const getAllTree = await octokit.git.getTree({
   //     owner: sourceOwner,
@@ -257,7 +230,7 @@ async function exec() {
   await octokit.git.createRef({
     owner: sourceOwner,
     repo: sourceRepo,
-    ref: `refs/heads/dfgvvvv`,
+    ref: `refs/heads/zzzzzzz`,
     sha: commitResult.data.sha
   })
 
@@ -289,4 +262,151 @@ async function exec() {
   //   run(token)
 }
 
-exec()
+async function deleteFile() {
+  const octokit = github.getOctokit('')
+
+  const sourceBranch = 'main'
+  const sourceOwner = 'JackTn'
+  const sourceRepo = 'azure-rest-api-specs-pr'
+
+  const getBranch = await octokit.repos.getBranch({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    branch: sourceBranch
+  })
+  const sourceTreeSha = getBranch.data.commit.sha
+
+  //   const newTree123 = await octokit.git.createTree({
+  //     owner: sourceOwner,
+  //     repo: sourceRepo,
+  //     tree: [
+  //       {
+  //         mode: '100644',
+  //         path:
+  //           'specification/containerregistry/data-plane/Azure.ContainerRegistry/stable/2021-07-01/examples/GetBlob.json',
+  //         type: 'blob',
+  //         sha: 'b50eee9da47c0afb7a3a98e9633b539b635316d8'
+  //       }
+  //     ],
+  //     base_tree: sourceTreeSha
+  //   })
+  //   core.info(`~~~~~`)
+  //   core.info(`newTree123 ${newTree123}`)
+
+  const getDefaultTree = await octokit.git.getTree({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    tree_sha: sourceTreeSha
+  })
+
+  const allTree = await octokit.git.getTree({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    tree_sha: getDefaultTree.data.sha,
+    recursive: '1'
+  })
+
+  core.info(`allTree ${allTree}`)
+
+  const filePath = 'specification/common-types'
+  const res123 = allTree.data.tree
+    .filter(n => !n.path.startsWith(`${filePath}`))
+    .map(n => ({
+      mode: n.mode,
+      path: n.path,
+      type: n.type,
+      sha: n.sha
+    }))
+
+  core.info(`~~~~~`)
+  core.info(`res123 ${res123}`)
+
+  //   const jsonFilesWithBase64Content: any[] = await Promise.all(
+  //     allTree.data.tree.map(async file => {
+  //       let content = await octokit.repos.getContent({
+  //         owner: sourceOwner,
+  //         repo: sourceRepo,
+  //         path: file.path,
+  //         ref: `refs/heads/${sourceBranch}`
+  //       })
+
+  //       return {...file, content: content.data.content}
+  //     })
+  //   )
+  //   core.info(`~~~~~`)
+  //   core.info(`jsonFilesWithBase64Content ${jsonFilesWithBase64Content}`)
+
+  //   const newNewTree = jsonFilesWithBase64Content.map<GitCreateTreeParamsTree>(
+  //     file => ({
+  //       path: file.path,
+  //       mode: '100644', // git mode for file (blob)
+  //       type: 'blob',
+  //       content: base64ToString(file.content)
+  //     })
+  //   )
+  //---
+
+  function group(array: Array<any>, subGroupLength: number) {
+    let index = 0
+    let newArray = []
+
+    while (index < array.length) {
+      newArray.push(array.slice(index, (index += subGroupLength)))
+    }
+
+    return newArray
+  }
+
+  async function createTreeAll(
+    totalTree: GitCreateTreeParamsTree[],
+    baseTreeSha: string,
+    ChunkLimit: number = 800
+  ) {
+    let groupTrees = group(totalTree, ChunkLimit)
+    let tmpTree
+    let tmpTreeSha = baseTreeSha
+    // https://docs.github.com/rest/reference/git#create-a-tree
+    // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
+    // https://www.atlassian.com/git/tutorials/big-repositories
+
+    for (const tree of groupTrees) {
+      tmpTree = await octokit.git.createTree({
+        owner: sourceOwner,
+        repo: sourceRepo,
+        tree: tree,
+        base_tree: tmpTreeSha
+      })
+
+      tmpTreeSha = tmpTree.data.sha
+    }
+
+    return tmpTreeSha
+  }
+
+  const newTree = await createTreeAll(
+    res123 as GitCreateTreeParamsTree[],
+    sourceTreeSha
+  )
+  core.info(`~~~~~`)
+  core.info(`newTree ${newTree}`)
+
+  const commitResult = await octokit.git.createCommit({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    tree: newTree,
+    message: 'test delete files',
+    parents: [sourceTreeSha]
+  })
+
+  core.info(`~~~~~`)
+  core.info(`commitResult ${commitResult}`)
+
+  await octokit.git.createRef({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    ref: `refs/heads/zxczxczxc`,
+    sha: commitResult.data.sha
+  })
+}
+
+deleteFile()
