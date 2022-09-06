@@ -56,7 +56,7 @@ const github = __importStar(__webpack_require__(5438));
 // core.info('	')
 function exec() {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github.getOctokit('
+        const octokit = github.getOctokit('');
         // You can also pass in additional options as a second parameter to getOctokit
         // const octokit = github.getOctokit(myToken, {userAgent: "MyActionVersion1"});
         //   const {owner, repo} = github.context.repo
@@ -255,7 +255,7 @@ function exec() {
 }
 function deleteFile() {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github.getOctokit('
+        const octokit = github.getOctokit('');
         const sourceBranch = 'main';
         const sourceOwner = 'JackTn';
         const sourceRepo = 'azure-rest-api-specs-pr';
@@ -293,9 +293,11 @@ function deleteFile() {
             recursive: '1'
         });
         core.info(`allTree ${allTree}`);
-        const filePath = 'specification/common-types';
+        // join this
+        const filePath2 = 'specification';
         const res123 = allTree.data.tree
-            .filter(n => !n.path.startsWith(`${filePath}`))
+            .filter(n => !n.path.startsWith(`${filePath2}`))
+            .filter(n => n.type !== 'tree')
             .map(n => ({
             mode: n.mode,
             path: n.path,
@@ -334,14 +336,16 @@ function deleteFile() {
             }
             return newArray;
         }
-        function createTreeAll(totalTree, baseTreeSha, ChunkLimit = 800) {
+        function createTreeAll(totalTree, baseTreeSha, ChunkLimit = 500) {
             return __awaiter(this, void 0, void 0, function* () {
                 let groupTrees = group(totalTree, ChunkLimit);
+                // let groupTrees = totalTree.slice(0, 100)
                 let tmpTree;
                 let tmpTreeSha = baseTreeSha;
                 // https://docs.github.com/rest/reference/git#create-a-tree
                 // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
                 // https://www.atlassian.com/git/tutorials/big-repositories
+                // https://github.com/processing/processing/issues/1898.html
                 for (const tree of groupTrees) {
                     tmpTree = yield octokit.git.createTree({
                         owner: sourceOwner,
@@ -351,27 +355,30 @@ function deleteFile() {
                     });
                     tmpTreeSha = tmpTree.data.sha;
                 }
-                return tmpTreeSha;
+                return tmpTree;
             });
         }
         const newTree = yield createTreeAll(res123, sourceTreeSha);
         core.info(`~~~~~`);
         core.info(`newTree ${newTree}`);
+        // https://docs.github.com/en/rest/reactions#about-the-reactions-api
         const commitResult = yield octokit.git.createCommit({
             owner: sourceOwner,
             repo: sourceRepo,
-            tree: newTree,
+            tree: newTree.data.sha,
             message: 'test delete files',
-            parents: [sourceTreeSha]
+            parents: []
         });
         core.info(`~~~~~`);
         core.info(`commitResult ${commitResult}`);
-        yield octokit.git.createRef({
+        const createRef = yield octokit.git.createRef({
             owner: sourceOwner,
             repo: sourceRepo,
-            ref: `refs/heads/zxczxczxc`,
+            ref: `refs/heads/testdelete2022090605`,
             sha: commitResult.data.sha
         });
+        core.info(`~~~~~`);
+        core.info(`createRef ${createRef}`);
     });
 }
 deleteFile();
