@@ -39,6 +39,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
 const openapi_markdown_1 = __webpack_require__(2411);
 const github = __importStar(__webpack_require__(5438));
+const dotenv = __importStar(__webpack_require__(2437));
+dotenv.config();
+console.log(process.env);
+console.log(process.env.SECRET_TOKEN);
 // const item = {
 //   repo: {
 //     name: '',
@@ -99,7 +103,7 @@ function exec() {
         const loopFiles = filePath.split('/');
         function getTreeByLoop(loopFiles, getDefaultTree) {
             return __awaiter(this, void 0, void 0, function* () {
-                let tmpLoopFiles = JSON.parse(JSON.stringify(loopFiles));
+                const tmpLoopFiles = JSON.parse(JSON.stringify(loopFiles));
                 let tmpDefaultTree = getDefaultTree;
                 let tmpTree;
                 let tmpTreeSha;
@@ -161,7 +165,7 @@ function exec() {
         //     tree_sha: sourceOutTreeSha
         //   })
         // getFile ********************************
-        let content = yield octokit.repos.getContent({
+        const content = yield octokit.repos.getContent({
             owner: sourceOwner,
             repo: sourceRepo,
             path: `specification/common-types/resource-management/v2/privatelinks.json`,
@@ -177,11 +181,11 @@ function exec() {
         //       })
         //     )
         //   })
-        let c = openapi_markdown_1.base64ToString(content.data.content);
+        const c = openapi_markdown_1.base64ToString(content.data.content);
         core.info(`~~~~~`);
         core.info(`content ${c}`);
         const jsonFilesWithBase64Content = yield Promise.all(copyTree.map((file) => __awaiter(this, void 0, void 0, function* () {
-            let content = yield octokit.repos.getContent({
+            const content = yield octokit.repos.getContent({
                 owner: sourceOwner,
                 repo: sourceRepo,
                 path: file.path,
@@ -265,22 +269,6 @@ function deleteFile() {
             branch: sourceBranch
         });
         const sourceTreeSha = getBranch.data.commit.sha;
-        //   const newTree123 = await octokit.git.createTree({
-        //     owner: sourceOwner,
-        //     repo: sourceRepo,
-        //     tree: [
-        //       {
-        //         mode: '100644',
-        //         path:
-        //           'specification/containerregistry/data-plane/Azure.ContainerRegistry/stable/2021-07-01/examples/GetBlob.json',
-        //         type: 'blob',
-        //         sha: 'b50eee9da47c0afb7a3a98e9633b539b635316d8'
-        //       }
-        //     ],
-        //     base_tree: sourceTreeSha
-        //   })
-        //   core.info(`~~~~~`)
-        //   core.info(`newTree123 ${newTree123}`)
         const getDefaultTree = yield octokit.git.getTree({
             owner: sourceOwner,
             repo: sourceRepo,
@@ -330,7 +318,7 @@ function deleteFile() {
         //---
         function group(array, subGroupLength) {
             let index = 0;
-            let newArray = [];
+            const newArray = [];
             while (index < array.length) {
                 newArray.push(array.slice(index, (index += subGroupLength)));
             }
@@ -338,10 +326,10 @@ function deleteFile() {
         }
         function createTreeAll(totalTree, baseTreeSha, ChunkLimit = 500) {
             return __awaiter(this, void 0, void 0, function* () {
-                let groupTrees = group(totalTree, ChunkLimit);
+                const groupTrees = group(totalTree, ChunkLimit);
                 // let groupTrees = totalTree.slice(0, 100)
                 let tmpTree;
-                let tmpTreeSha = baseTreeSha;
+                let tmpTreeSha;
                 // https://docs.github.com/rest/reference/git#create-a-tree
                 // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
                 // https://www.atlassian.com/git/tutorials/big-repositories
@@ -350,7 +338,7 @@ function deleteFile() {
                     tmpTree = yield octokit.git.createTree({
                         owner: sourceOwner,
                         repo: sourceRepo,
-                        tree: tree,
+                        tree,
                         base_tree: tmpTreeSha
                     });
                     tmpTreeSha = tmpTree.data.sha;
@@ -367,21 +355,113 @@ function deleteFile() {
             repo: sourceRepo,
             tree: newTree.data.sha,
             message: 'test delete files',
-            parents: []
+            parents: [sourceTreeSha]
         });
         core.info(`~~~~~`);
         core.info(`commitResult ${commitResult}`);
         const createRef = yield octokit.git.createRef({
             owner: sourceOwner,
             repo: sourceRepo,
-            ref: `refs/heads/testdelete2022090605`,
+            ref: `refs/heads/testdelete2022090711`,
             sha: commitResult.data.sha
         });
         core.info(`~~~~~`);
         core.info(`createRef ${createRef}`);
     });
 }
-deleteFile();
+// deleteFile()
+function testClone() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = github.getOctokit('');
+        const sourceBranch = 'main';
+        const sourceOwner = 'JackTn';
+        const sourceRepo = 'azure-rest-api-specs-pr';
+        const getBranch = yield octokit.repos.getBranch({
+            owner: sourceOwner,
+            repo: sourceRepo,
+            branch: sourceBranch
+        });
+        const sourceTreeSha = getBranch.data.commit.sha;
+        core.info(`~~~~~`);
+        core.info(`sourceTreeSha ${sourceTreeSha}`);
+        const newTree123 = yield octokit.git.createTree({
+            owner: sourceOwner,
+            repo: sourceRepo,
+            tree: [
+                {
+                    mode: '100644',
+                    path: 'specification/GetBlob.json',
+                    type: 'blob',
+                    content: 'HELLO WORD'
+                }
+            ],
+            base_tree: undefined
+        });
+        core.info(`~~~~~`);
+        core.info(`newTree123 ${newTree123}`);
+        const commitResult = yield octokit.git.createCommit({
+            owner: sourceOwner,
+            repo: sourceRepo,
+            tree: newTree123.data.sha,
+            message: 'test delete files',
+            parents: [sourceTreeSha]
+        });
+        core.info(`~~~~~`);
+        core.info(`commitResult ${commitResult}`);
+        const createRef = yield octokit.git.createRef({
+            owner: sourceOwner,
+            repo: sourceRepo,
+            ref: `refs/heads/testDelete2022090706`,
+            sha: commitResult.data.sha
+        });
+        core.info(`~~~~~`);
+        core.info(`createRef ${createRef}`);
+    });
+}
+// testClone()
+function testCreatePR() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const owner = 'JackTn';
+        const repo = 'azure-rest-api-specs-pr';
+        const base = 'main';
+        const head = 'JackTn:testdelete2022090711';
+        const octokit = github.getOctokit('');
+        const pr = yield octokit.pulls.create({
+            owner,
+            repo,
+            head,
+            base,
+            title: '测试机333 title',
+            body: '测试222 body'
+        });
+        core.info(`~~~~~`);
+        core.info(`pr ${pr}`);
+        const labels = ['bug', 'documentation'];
+        yield octokit.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pr.data.number,
+            labels
+        });
+        const assignees = ['JackTn', 'Keryul'];
+        yield octokit.issues.addAssignees({
+            owner,
+            repo,
+            issue_number: pr.data.number,
+            assignees
+        });
+        // Review cannot be requested from pull request author.
+        // Reviews may only be requested from collaborators. One or more of the users or teams you specified is not a collaborator of the JackTn/azure-rest-api-specs-pr repository
+        const reviewers = ['Keryul'];
+        yield octokit.pulls.requestReviewers({
+            owner,
+            repo,
+            pull_number: pr.data.number,
+            reviewers
+        });
+    });
+}
+// testCreatePR()
 //# sourceMappingURL=main.js.map
 
 /***/ }),
@@ -8272,6 +8352,122 @@ class Deprecation extends Error {
 }
 
 exports.Deprecation = Deprecation;
+
+
+/***/ }),
+
+/***/ 2437:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const fs = __webpack_require__(5747)
+const path = __webpack_require__(5622)
+const os = __webpack_require__(2087)
+
+const LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg
+
+// Parser src into an Object
+function parse (src) {
+  const obj = {}
+
+  // Convert buffer to string
+  let lines = src.toString()
+
+  // Convert line breaks to same format
+  lines = lines.replace(/\r\n?/mg, '\n')
+
+  let match
+  while ((match = LINE.exec(lines)) != null) {
+    const key = match[1]
+
+    // Default undefined or null to empty string
+    let value = (match[2] || '')
+
+    // Remove whitespace
+    value = value.trim()
+
+    // Check if double quoted
+    const maybeQuote = value[0]
+
+    // Remove surrounding quotes
+    value = value.replace(/^(['"`])([\s\S]*)\1$/mg, '$2')
+
+    // Expand newlines if double quoted
+    if (maybeQuote === '"') {
+      value = value.replace(/\\n/g, '\n')
+      value = value.replace(/\\r/g, '\r')
+    }
+
+    // Add to object
+    obj[key] = value
+  }
+
+  return obj
+}
+
+function _log (message) {
+  console.log(`[dotenv][DEBUG] ${message}`)
+}
+
+function _resolveHome (envPath) {
+  return envPath[0] === '~' ? path.join(os.homedir(), envPath.slice(1)) : envPath
+}
+
+// Populates process.env from .env file
+function config (options) {
+  let dotenvPath = path.resolve(process.cwd(), '.env')
+  let encoding = 'utf8'
+  const debug = Boolean(options && options.debug)
+  const override = Boolean(options && options.override)
+
+  if (options) {
+    if (options.path != null) {
+      dotenvPath = _resolveHome(options.path)
+    }
+    if (options.encoding != null) {
+      encoding = options.encoding
+    }
+  }
+
+  try {
+    // Specifying an encoding returns a string instead of a buffer
+    const parsed = DotenvModule.parse(fs.readFileSync(dotenvPath, { encoding }))
+
+    Object.keys(parsed).forEach(function (key) {
+      if (!Object.prototype.hasOwnProperty.call(process.env, key)) {
+        process.env[key] = parsed[key]
+      } else {
+        if (override === true) {
+          process.env[key] = parsed[key]
+        }
+
+        if (debug) {
+          if (override === true) {
+            _log(`"${key}" is already defined in \`process.env\` and WAS overwritten`)
+          } else {
+            _log(`"${key}" is already defined in \`process.env\` and was NOT overwritten`)
+          }
+        }
+      }
+    })
+
+    return { parsed }
+  } catch (e) {
+    if (debug) {
+      _log(`Failed to load ${dotenvPath} ${e.message}`)
+    }
+
+    return { error: e }
+  }
+}
+
+const DotenvModule = {
+  config,
+  parse
+}
+
+module.exports.config = DotenvModule.config
+module.exports.parse = DotenvModule.parse
+module.exports = DotenvModule
 
 
 /***/ }),

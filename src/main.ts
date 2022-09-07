@@ -4,7 +4,10 @@ import {run} from './handle'
 import * as github from '@actions/github'
 import {OctokitResponse} from '@octokit/types'
 import {GitCreateTreeParamsTree, GitGetTreeResponseData} from './types'
-
+import * as dotenv from 'dotenv'
+dotenv.config()
+console.log(process.env)
+console.log(process.env.SECRET_TOKEN)
 // const item = {
 //   repo: {
 //     name: '',
@@ -78,7 +81,7 @@ async function exec() {
     loopFiles: string[],
     getDefaultTree: OctokitResponse<GitGetTreeResponseData>
   ) {
-    let tmpLoopFiles = JSON.parse(JSON.stringify(loopFiles))
+    const tmpLoopFiles = JSON.parse(JSON.stringify(loopFiles))
     let tmpDefaultTree = getDefaultTree
     let tmpTree
     let tmpTreeSha
@@ -154,7 +157,7 @@ async function exec() {
   //   })
 
   // getFile ********************************
-  let content = await octokit.repos.getContent({
+  const content = await octokit.repos.getContent({
     owner: sourceOwner,
     repo: sourceRepo,
     path: `specification/common-types/resource-management/v2/privatelinks.json`,
@@ -170,13 +173,13 @@ async function exec() {
   //       })
   //     )
   //   })
-  let c = base64ToString(content.data.content)
+  const c = base64ToString(content.data.content)
   core.info(`~~~~~`)
   core.info(`content ${c}`)
 
   const jsonFilesWithBase64Content: any[] = await Promise.all(
     copyTree.map(async file => {
-      let content = await octokit.repos.getContent({
+      const content = await octokit.repos.getContent({
         owner: sourceOwner,
         repo: sourceRepo,
         path: file.path,
@@ -276,23 +279,6 @@ async function deleteFile() {
   })
   const sourceTreeSha = getBranch.data.commit.sha
 
-  //   const newTree123 = await octokit.git.createTree({
-  //     owner: sourceOwner,
-  //     repo: sourceRepo,
-  //     tree: [
-  //       {
-  //         mode: '100644',
-  //         path:
-  //           'specification/containerregistry/data-plane/Azure.ContainerRegistry/stable/2021-07-01/examples/GetBlob.json',
-  //         type: 'blob',
-  //         sha: 'b50eee9da47c0afb7a3a98e9633b539b635316d8'
-  //       }
-  //     ],
-  //     base_tree: sourceTreeSha
-  //   })
-  //   core.info(`~~~~~`)
-  //   core.info(`newTree123 ${newTree123}`)
-
   const getDefaultTree = await octokit.git.getTree({
     owner: sourceOwner,
     repo: sourceRepo,
@@ -348,9 +334,9 @@ async function deleteFile() {
   //   )
   //---
 
-  function group(array: Array<any>, subGroupLength: number) {
+  function group(array: any[], subGroupLength: number) {
     let index = 0
-    let newArray = []
+    const newArray = []
 
     while (index < array.length) {
       newArray.push(array.slice(index, (index += subGroupLength)))
@@ -362,12 +348,12 @@ async function deleteFile() {
   async function createTreeAll(
     totalTree: GitCreateTreeParamsTree[],
     baseTreeSha: string,
-    ChunkLimit: number = 500
+    ChunkLimit = 500
   ) {
-    let groupTrees = group(totalTree, ChunkLimit)
+    const groupTrees = group(totalTree, ChunkLimit)
     // let groupTrees = totalTree.slice(0, 100)
     let tmpTree
-    let tmpTreeSha = baseTreeSha
+    let tmpTreeSha
     // https://docs.github.com/rest/reference/git#create-a-tree
     // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
     // https://www.atlassian.com/git/tutorials/big-repositories
@@ -377,7 +363,7 @@ async function deleteFile() {
       tmpTree = await octokit.git.createTree({
         owner: sourceOwner,
         repo: sourceRepo,
-        tree: tree,
+        tree,
         base_tree: tmpTreeSha
       })
 
@@ -400,7 +386,7 @@ async function deleteFile() {
     repo: sourceRepo,
     tree: newTree!.data.sha,
     message: 'test delete files',
-    parents: []
+    parents: [sourceTreeSha]
   })
 
   core.info(`~~~~~`)
@@ -409,11 +395,110 @@ async function deleteFile() {
   const createRef = await octokit.git.createRef({
     owner: sourceOwner,
     repo: sourceRepo,
-    ref: `refs/heads/testdelete2022090605`,
+    ref: `refs/heads/testdelete2022090711`,
     sha: commitResult.data.sha
   })
   core.info(`~~~~~`)
   core.info(`createRef ${createRef}`)
 }
 
-deleteFile()
+// deleteFile()
+
+async function testClone() {
+  const octokit = github.getOctokit('')
+
+  const sourceBranch = 'main'
+  const sourceOwner = 'JackTn'
+  const sourceRepo = 'azure-rest-api-specs-pr'
+
+  const getBranch = await octokit.repos.getBranch({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    branch: sourceBranch
+  })
+  const sourceTreeSha = getBranch.data.commit.sha
+
+  core.info(`~~~~~`)
+  core.info(`sourceTreeSha ${sourceTreeSha}`)
+
+  const newTree123 = await octokit.git.createTree({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    tree: [
+      {
+        mode: '100644',
+        path: 'specification/GetBlob.json',
+        type: 'blob',
+        content: 'HELLO WORD'
+      }
+    ],
+    base_tree: undefined
+  })
+  core.info(`~~~~~`)
+  core.info(`newTree123 ${newTree123}`)
+
+  const commitResult = await octokit.git.createCommit({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    tree: newTree123.data.sha,
+    message: 'test delete files',
+    parents: [sourceTreeSha]
+  })
+  core.info(`~~~~~`)
+  core.info(`commitResult ${commitResult}`)
+
+  const createRef = await octokit.git.createRef({
+    owner: sourceOwner,
+    repo: sourceRepo,
+    ref: `refs/heads/testDelete2022090706`,
+    sha: commitResult.data.sha
+  })
+  core.info(`~~~~~`)
+  core.info(`createRef ${createRef}`)
+}
+
+// testClone()
+
+async function testCreatePR() {
+  const owner = 'JackTn'
+  const repo = 'azure-rest-api-specs-pr'
+  const base = 'main'
+  const head = 'JackTn:testdelete2022090711'
+  const octokit = github.getOctokit('')
+  const pr = await octokit.pulls.create({
+    owner,
+    repo,
+    head,
+    base,
+    title: '测试机333 title',
+    body: '测试222 body'
+  })
+
+  core.info(`~~~~~`)
+  core.info(`pr ${pr}`)
+  const labels = ['bug', 'documentation']
+  await octokit.issues.addLabels({
+    owner,
+    repo,
+    issue_number: pr.data.number,
+    labels
+  })
+  const assignees = ['JackTn', 'Keryul']
+  await octokit.issues.addAssignees({
+    owner,
+    repo,
+    issue_number: pr.data.number,
+    assignees
+  })
+
+  // Review cannot be requested from pull request author.
+  // Reviews may only be requested from collaborators. One or more of the users or teams you specified is not a collaborator of the JackTn/azure-rest-api-specs-pr repository
+  const reviewers = ['Keryul']
+  await octokit.pulls.requestReviewers({
+    owner,
+    repo,
+    pull_number: pr.data.number,
+    reviewers
+  })
+}
+// testCreatePR()

@@ -5,8 +5,8 @@
   "description": "TypeScript template action",
   "main": "lib/main.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "debug": "node lib/main.js",
+    "start": "node dist/index.js --debug",
+    "debug": "act -l",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
@@ -32,7 +32,9 @@
     "@octokit/plugin-throttling": "^4.2.0",
     "@octokit/types": "^7.2.0",
     "@octokit/webhooks": "^7.11.2",
-    "fs-extra": "^10.1.0"
+    "dotenv": "^16.0.2",
+    "fs-extra": "^10.1.0",
+    "yargs": "^17.1.1-candidate.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
