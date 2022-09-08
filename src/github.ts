@@ -93,7 +93,7 @@ export class Git {
     return await this.github.git.createCommit(createCommitRequest)
   }
 
-  public async createReference(
+  public async createRef(
     createRefRequest: GitCreateRefRequest
   ): Promise<OctokitResponse<GitCreateRefResponseData>> {
     return await this.github.git.createRef(createRefRequest)

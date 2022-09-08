@@ -4,6 +4,7 @@ import {run} from './handle'
 import * as github from '@actions/github'
 import {OctokitResponse} from '@octokit/types'
 import {GitCreateTreeParamsTree, GitGetTreeResponseData} from './types'
+import * as _ from 'lodash'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
@@ -487,15 +488,70 @@ async function getDiffFiles() {
   const git = new Git()
   const source = {
     owner: 'JackTn',
-    repo: 'test-repo-billy',
+    repo: 'azure-rest-api-specs-pr',
     branch: 'main'
   }
-  console.log()
-  const files = 'specification/common-types'
   const branchInfo = await git.getBranch(source)
-  const a = pick(source, ['owner', 'repo'])
-  let getDefaultTreeParam = { ...a, tree_sha: branchInfo.data.commit.sha }
-  const getDefaultTree = await git.getTree(getDefaultTreeParam, tree_sha: branchInfo.data.commit.sha )
+  const treeLists = await git.getTree({
+    ..._.pick(source, ['owner', 'repo']),
+    tree_sha: branchInfo.data.commit.sha,
+    recursive: '1'
+  })
+  core.info(
+    `There are ${treeLists.data.tree.length} tree list in ${source.owner}/${source.repo}`
+  )
+  const filePath = 'specification/common-types'
+  //get diff files
+  const diffTrees = treeLists.data.tree
+    .filter(n => !n.path.startsWith(`${filePath}`))
+    .filter(n => n.type !== 'tree')
+    .map(n => ({
+      mode: n.mode,
+      path: n.path,
+      type: n.type,
+      sha: n.sha
+    }))
+  const jsonFilesWithBase64Content: any[] = await Promise.all(
+    diffTrees.map(async file => {
+      const content = await git.getContent({
+        ..._.pick(source, ['owner', 'repo']),
+        path: file.path,
+        ref: `refs/heads/${source.branch}`
+      })
+
+      return {...file, content: content.data.content}
+    })
+  )
+
+  const diffTreeCont = jsonFilesWithBase64Content.map<GitCreateTreeParamsTree>(
+    file => ({
+      path: file.path,
+      mode: '100644', // git mode for file (blob)
+      type: 'blob',
+      content: base64ToString(file.content)
+    })
+  )
+
+  // here return diff tree
+
+  const newTree = await git.createTree({
+    ..._.pick(source, ['owner', 'repo']),
+    tree: diffTreeCont
+  })
+
+  const commitResult = await git.createCommit({
+    ..._.pick(source, ['owner', 'repo']),
+    tree: newTree.data.sha,
+    message: 'fffffffff',
+    parents: [branchInfo.data.commit.sha]
+  })
+
+  const newBranch = 'testhHHH'
+  await git.createRef({
+    ..._.pick(source, ['owner', 'repo']),
+    ref: `refs/heads/${newBranch}`,
+    sha: commitResult.data.sha
+  })
 }
 
 getDiffFiles()
