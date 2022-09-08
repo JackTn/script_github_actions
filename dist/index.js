@@ -2,6 +2,124 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 5928:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Git = void 0;
+const core = __importStar(__webpack_require__(2186));
+const github = __importStar(__webpack_require__(5438));
+const dotenv = __importStar(__webpack_require__(2437));
+dotenv.config();
+class Git {
+    constructor() {
+        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
+        const octokit = github.getOctokit(GITHUB_TOKEN);
+        this.github = octokit;
+    }
+    coreInfo() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { owner, repo } = this.github.context.repo;
+            const payload = this.github.context.payload;
+            const eventName = this.github.context.eventName;
+            const sha = this.github.context.sha;
+            const ref = this.github.context.ref;
+            const action = this.github.context.action;
+            const runNumber = this.github.context.runNumber;
+            const runId = this.github.context.runId;
+            core.info(`owner ${owner}`);
+            core.info(`repo ${repo}`);
+            core.info(`payload ${JSON.stringify(payload)}`);
+            core.info(`eventName ${eventName}`);
+            core.info(`sha ${sha}`);
+            core.info(`ref ${ref}`);
+            core.info(`action ${action}`);
+            core.info(`runNumber ${runNumber}`);
+            core.info(`runId ${runId}`);
+        });
+    }
+    debugInfo() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log(this.github);
+        });
+    }
+    getBranch(getBranchRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.repos.getBranch(getBranchRequest);
+        });
+    }
+    getTree(getTreeRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.git.getTree(getTreeRequest);
+        });
+    }
+    //public async loopGetTree(
+    //  GetTreeRequest: GitGetTreeParameters
+    //): Promise<OctokitResponse<GitGetTreeResponseData>> {
+    //  return await this.github.git.getTree(GetTreeRequest)
+    //}
+    createTree(createTreeRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.git.createTree(createTreeRequest);
+        });
+    }
+    createTreeAll() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // https://docs.github.com/rest/reference/git#create-a-tree
+            // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
+        });
+    }
+    getContent(getContentRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.repos.getContent(getContentRequest);
+        });
+    }
+    createCommit(createCommitRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.git.createCommit(createCommitRequest);
+        });
+    }
+    createReference(createRefRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.git.createRef(createRefRequest);
+        });
+    }
+}
+exports.Git = Git;
+//# sourceMappingURL=github.js.map
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -41,45 +159,14 @@ const openapi_markdown_1 = __webpack_require__(2411);
 const github = __importStar(__webpack_require__(5438));
 const dotenv = __importStar(__webpack_require__(2437));
 dotenv.config();
-console.log(process.env);
-console.log(process.env.SECRET_TOKEN);
-// const item = {
-//   repo: {
-//     name: '',
-//     user: '',
-//     fullName: '',
-//     branch: 'RPSaaSMaster'
-//   },
-//   files: ['specification/common-types']
-// }
-// core.info(`Repository Info`)
-// core.info(`Slug		: ${item.repo.name}`)
-// core.info(`Owner		: ${item.repo.user}`)
-// core.info(`Https Url	: https://${item.repo.fullName}`)
-// core.info(`Branch		: ${item.repo.branch}`)
-// core.info('	')
+const github_1 = __webpack_require__(5928);
+const utils_1 = __webpack_require__(918);
 function exec() {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github.getOctokit('');
+        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
+        const octokit = github.getOctokit(GITHUB_TOKEN);
         // You can also pass in additional options as a second parameter to getOctokit
         // const octokit = github.getOctokit(myToken, {userAgent: "MyActionVersion1"});
-        //   const {owner, repo} = github.context.repo
-        //   const payload = github.context.payload
-        //   const eventName = github.context.eventName
-        //   const sha = github.context.sha
-        //   const ref = github.context.ref
-        //   const action = github.context.action
-        //   const runNumber = github.context.runNumber
-        //   const runId = github.context.runId
-        //   core.info(`owner ${owner}`)
-        //   core.info(`repo ${repo}`)
-        //   core.info(`payload ${JSON.stringify(payload)}`)
-        //   core.info(`eventName ${eventName}`)
-        //   core.info(`sha ${sha}`)
-        //   core.info(`ref ${ref}`)
-        //   core.info(`action ${action}`)
-        //   core.info(`runNumber ${runNumber}`)
-        //   core.info(`runId ${runId}`)
         const sourceBranch = 'main';
         const sourceOwner = 'JackTn';
         const sourceRepo = 'script_github_actions';
@@ -259,7 +346,7 @@ function exec() {
 }
 function deleteFile() {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github.getOctokit('');
+        const octokit = github.getOctokit('GITHUB_TOKEN');
         const sourceBranch = 'main';
         const sourceOwner = 'JackTn';
         const sourceRepo = 'azure-rest-api-specs-pr';
@@ -372,7 +459,7 @@ function deleteFile() {
 // deleteFile()
 function testClone() {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github.getOctokit('');
+        const octokit = github.getOctokit('GITHUB_TOKEN');
         const sourceBranch = 'main';
         const sourceOwner = 'JackTn';
         const sourceRepo = 'azure-rest-api-specs-pr';
@@ -425,7 +512,7 @@ function testCreatePR() {
         const repo = 'azure-rest-api-specs-pr';
         const base = 'main';
         const head = 'JackTn:testdelete2022090711';
-        const octokit = github.getOctokit('');
+        const octokit = github.getOctokit('GITHUB_TOKEN');
         const pr = yield octokit.pulls.create({
             owner,
             repo,
@@ -462,7 +549,61 @@ function testCreatePR() {
     });
 }
 // testCreatePR()
+function test() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const git = new github_1.Git();
+        const p = {
+            owner: 'JackTn',
+            repo: 'script_github_actions',
+            branch: 'main'
+        };
+        const branchInfo = yield git.getBranch(p);
+        console.log(branchInfo);
+    });
+}
+//   test()
+function getDiffFiles() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const git = new github_1.Git();
+        const source = {
+            owner: 'JackTn',
+            repo: 'test-repo-billy',
+            branch: 'main'
+        };
+        console.log(Object.assign(Object.assign({}, utils_1.pick(source, ['owner', 'repo'])), { tree_sha: '123' }));
+        //   const files = 'specification/common-types'
+        //   const branchInfo = await git.getBranch(source)
+        //   const getDefaultTree = await git.getTree()
+    });
+}
+getDiffFiles();
 //# sourceMappingURL=main.js.map
+
+/***/ }),
+
+/***/ 918:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.pick = exports.chunk = void 0;
+exports.chunk = (array, subGroupLength) => {
+    let index = 0;
+    const newArray = [];
+    while (index < array.length) {
+        newArray.push(array.slice(index, (index += subGroupLength)));
+    }
+    return newArray;
+};
+exports.pick = (originObj, array) => {
+    let obj = {};
+    array.forEach(key => {
+        obj[key] = originObj[key];
+    });
+    return obj;
+};
+//# sourceMappingURL=utils.js.map
 
 /***/ }),
 

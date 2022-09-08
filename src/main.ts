@@ -6,48 +6,16 @@ import {OctokitResponse} from '@octokit/types'
 import {GitCreateTreeParamsTree, GitGetTreeResponseData} from './types'
 import * as dotenv from 'dotenv'
 dotenv.config()
-console.log(process.env)
-console.log(process.env.SECRET_TOKEN)
-// const item = {
-//   repo: {
-//     name: '',
-//     user: '',
-//     fullName: '',
-//     branch: 'RPSaaSMaster'
-//   },
-//   files: ['specification/common-types']
-// }
 
-// core.info(`Repository Info`)
-// core.info(`Slug		: ${item.repo.name}`)
-// core.info(`Owner		: ${item.repo.user}`)
-// core.info(`Https Url	: https://${item.repo.fullName}`)
-// core.info(`Branch		: ${item.repo.branch}`)
-// core.info('	')
+import {Git} from './github'
+import {pick} from './utils'
+
 async function exec() {
-  const octokit = github.getOctokit('')
+  const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
+  const octokit = github.getOctokit(GITHUB_TOKEN)
 
   // You can also pass in additional options as a second parameter to getOctokit
   // const octokit = github.getOctokit(myToken, {userAgent: "MyActionVersion1"});
-
-  //   const {owner, repo} = github.context.repo
-  //   const payload = github.context.payload
-  //   const eventName = github.context.eventName
-  //   const sha = github.context.sha
-  //   const ref = github.context.ref
-  //   const action = github.context.action
-  //   const runNumber = github.context.runNumber
-  //   const runId = github.context.runId
-
-  //   core.info(`owner ${owner}`)
-  //   core.info(`repo ${repo}`)
-  //   core.info(`payload ${JSON.stringify(payload)}`)
-  //   core.info(`eventName ${eventName}`)
-  //   core.info(`sha ${sha}`)
-  //   core.info(`ref ${ref}`)
-  //   core.info(`action ${action}`)
-  //   core.info(`runNumber ${runNumber}`)
-  //   core.info(`runId ${runId}`)
 
   const sourceBranch = 'main'
   const sourceOwner = 'JackTn'
@@ -266,7 +234,7 @@ async function exec() {
 }
 
 async function deleteFile() {
-  const octokit = github.getOctokit('')
+  const octokit = github.getOctokit('GITHUB_TOKEN')
 
   const sourceBranch = 'main'
   const sourceOwner = 'JackTn'
@@ -405,7 +373,7 @@ async function deleteFile() {
 // deleteFile()
 
 async function testClone() {
-  const octokit = github.getOctokit('')
+  const octokit = github.getOctokit('GITHUB_TOKEN')
 
   const sourceBranch = 'main'
   const sourceOwner = 'JackTn'
@@ -464,7 +432,7 @@ async function testCreatePR() {
   const repo = 'azure-rest-api-specs-pr'
   const base = 'main'
   const head = 'JackTn:testdelete2022090711'
-  const octokit = github.getOctokit('')
+  const octokit = github.getOctokit('GITHUB_TOKEN')
   const pr = await octokit.pulls.create({
     owner,
     repo,
@@ -502,3 +470,32 @@ async function testCreatePR() {
   })
 }
 // testCreatePR()
+
+async function test() {
+  const git = new Git()
+  const p = {
+    owner: 'JackTn',
+    repo: 'script_github_actions',
+    branch: 'main'
+  }
+  const branchInfo = await git.getBranch(p)
+  console.log(branchInfo)
+}
+
+//   test()
+async function getDiffFiles() {
+  const git = new Git()
+  const source = {
+    owner: 'JackTn',
+    repo: 'test-repo-billy',
+    branch: 'main'
+  }
+  console.log()
+  const files = 'specification/common-types'
+  const branchInfo = await git.getBranch(source)
+  const a = pick(source, ['owner', 'repo'])
+  let getDefaultTreeParam = { ...a, tree_sha: branchInfo.data.commit.sha }
+  const getDefaultTree = await git.getTree(getDefaultTreeParam, tree_sha: branchInfo.data.commit.sha )
+}
+
+getDiffFiles()
