@@ -40,10 +40,11 @@ exports.Git = void 0;
 const core = __importStar(__webpack_require__(2186));
 const github = __importStar(__webpack_require__(5438));
 const dotenv = __importStar(__webpack_require__(2437));
+const _ = __importStar(__webpack_require__(250));
+const openapi_markdown_1 = __webpack_require__(2411);
 dotenv.config();
 class Git {
-    constructor() {
-        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
+    constructor(GITHUB_TOKEN) {
         const octokit = github.getOctokit(GITHUB_TOKEN);
         this.github = octokit;
     }
@@ -83,20 +84,68 @@ class Git {
             return yield this.github.git.getTree(getTreeRequest);
         });
     }
-    //public async loopGetTree(
-    //  GetTreeRequest: GitGetTreeParameters
-    //): Promise<OctokitResponse<GitGetTreeResponseData>> {
-    //  return await this.github.git.getTree(GetTreeRequest)
-    //}
+    getTreeRecursive(getTreeRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
+            // so that need more times to get tree
+            const defaultTree = yield this.github.git.getTree(Object.assign({}, getTreeRequest));
+            const specTree = defaultTree.data.tree.find(n => n.type === 'tree' && n.path.startsWith('specification'));
+            const svcFolder = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: specTree.sha }));
+            const svcTree = svcFolder.data.tree.find(n => n.type === 'tree' && n.path.startsWith('common-types'));
+            const treeList2 = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: svcTree.sha, recursive: '1' }));
+            treeList2.data.tree.forEach(n => {
+                n.path = `specification/${'specification'}/${'common-types'}`;
+            });
+            console.log(treeList2);
+            let treeList1 = yield this.github.git.getTree(Object.assign({}, getTreeRequest));
+            let treeList = treeList1.data.tree;
+            while (treeList.filter(n => n.type === 'tree').length !== 0) {
+                let tmpArr = treeList.filter(n => n.type === 'tree');
+                treeList = treeList.filter(n => n.type !== 'tree');
+                for (const item of tmpArr) {
+                    let tree = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: item.sha }));
+                    treeList = [...treeList, ...tree.data.tree];
+                }
+            }
+            return treeList;
+        });
+    }
+    getTreeByPath(filePath, getTreeRequest, getDefaultTree) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const tmpLoopFiles = JSON.parse(JSON.stringify(filePath.split('/')));
+            let tmpDefaultTree = getDefaultTree;
+            let tmpTree;
+            let tmpTreeSha;
+            while (tmpLoopFiles.length > 0) {
+                tmpTree = tmpDefaultTree.data.tree.find(n => n.path === tmpLoopFiles[0]);
+                tmpTreeSha = tmpTree.sha;
+                tmpDefaultTree = yield this.github.git.getTree(Object.assign(Object.assign({}, getTreeRequest), { tree_sha: tmpTreeSha }));
+                tmpLoopFiles.shift();
+            }
+            const res = yield this.github.git.getTree(Object.assign(Object.assign({}, getTreeRequest), { tree_sha: tmpDefaultTree.data.sha, recursive: '1' }));
+            res.data.tree.forEach(n => {
+                n.path = `${filePath}/${n.path}`;
+            });
+            return res.data.tree.filter(n => n.type !== 'tree');
+        });
+    }
     createTree(createTreeRequest) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.github.git.createTree(createTreeRequest);
         });
     }
-    createTreeAll() {
+    createTreeAll(branchRequest, totalTree, ChunkLimit = 500) {
         return __awaiter(this, void 0, void 0, function* () {
             // https://docs.github.com/rest/reference/git#create-a-tree
             // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
+            const groupTrees = _.chunk(totalTree, ChunkLimit);
+            let tmpTree;
+            let tmpTreeSha;
+            for (const tree of groupTrees) {
+                tmpTree = yield this.createTree(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { tree, base_tree: tmpTreeSha }));
+                tmpTreeSha = tmpTree.data.sha;
+            }
+            return tmpTree;
         });
     }
     getContent(getContentRequest) {
@@ -109,9 +158,85 @@ class Git {
             return yield this.github.git.createCommit(createCommitRequest);
         });
     }
+    addCommit(branchRequest, newTree, message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const branchInfo = yield this.getBranch(branchRequest);
+            return yield this.github.git.createCommit(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { tree: newTree.data.sha, message, parents: [branchInfo.data.commit.sha] }));
+        });
+    }
     createRef(createRefRequest) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.github.git.createRef(createRefRequest);
+        });
+    }
+    createBranch(branchRequest, commitResult, newBranch) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.github.git.createRef(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { ref: `refs/heads/${newBranch}`, sha: commitResult.data.sha }));
+        });
+    }
+    createPullRequest(branchRequest, newBranch, title, body, labels, assignees, reviewers) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const pullRequest = yield this.github.pulls.create(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { head: `${branchRequest.owner}:${newBranch}`, base: branchRequest.branch, title,
+                body }));
+            labels &&
+                (yield this.github.issues.addLabels(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, labels })));
+            assignees &&
+                (yield this.github.issues.addAssignees(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, assignees })));
+            reviewers &&
+                (yield this.github.pulls.requestReviewers(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { pull_number: pullRequest.data.number, reviewers })));
+            return pullRequest;
+        });
+    }
+    getChangeFileContent(branchRequest, filePath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.info(`1/2 Start get change files tree`);
+            console.time('Get change files tree cost time');
+            const branchInfo = yield this.getBranch(branchRequest);
+            const treeLists = yield this.getTree(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { tree_sha: branchInfo.data.commit.sha }));
+            const diffTrees = yield this.getTreeByPath(filePath, _.pick(branchRequest, ['owner', 'repo']), treeLists);
+            core.info(`There are ${treeLists.data.tree.length} change files in ${branchRequest.owner}/${branchRequest.repo}`);
+            console.timeEnd('Get change files tree cost time');
+            core.info(`2/2 Start get change files content`);
+            console.time(`Get change files content cost time`);
+            const jsonFilesWithBase64Content = yield Promise.all(diffTrees.map((file) => __awaiter(this, void 0, void 0, function* () {
+                const content = yield this.getContent(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { path: file.path, ref: `refs/heads/${branchRequest.branch}` }));
+                return Object.assign(Object.assign({}, file), { content: content.data.content });
+            })));
+            const changeFileContent = jsonFilesWithBase64Content.map(file => ({
+                path: file.path,
+                mode: '100644',
+                type: 'blob',
+                content: openapi_markdown_1.base64ToString(file.content)
+            }));
+            console.timeEnd(`Get change files content cost time`);
+            return changeFileContent;
+        });
+    }
+    getTreeListWithOutPath(branchRequest, filePath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.info(`1/1 Start get tree`);
+            console.time('Get tree cost time');
+            const branchInfo = yield this.getBranch(branchRequest);
+            // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
+            // so that need more times to get tree
+            const treeLists = yield this.getTreeRecursive(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { tree_sha: branchInfo.data.commit.sha }));
+            // const treeLists = await this.getTree({
+            //   ..._.pick(branchRequest, ['owner', 'repo']),
+            //   tree_sha: treeLists1.data.sha,
+            //    recursive: '1'
+            // })
+            console.timeEnd('Get tree cost time');
+            core.info(`There are ${treeLists.length} tree list in ${branchRequest.owner}/${branchRequest.repo}`);
+            const res = treeLists
+                .filter(n => !n.path.startsWith(filePath))
+                .filter(n => n.type !== 'tree')
+                .map(n => ({
+                mode: n.mode,
+                path: n.path,
+                type: n.type,
+                sha: n.sha
+            }));
+            return res;
         });
     }
 }
@@ -514,10 +639,10 @@ function testCreatePR() {
         const head = 'JackTn:testdelete2022090711';
         const octokit = github.getOctokit('GITHUB_TOKEN');
         const pr = yield octokit.pulls.create({
-            owner,
-            repo,
-            head,
-            base,
+            owner: 'JackTn',
+            repo: 'azure-rest-api-specs-pr',
+            head: 'JackTn:testdelete2022090711',
+            base: 'main',
             title: '测试机333 title',
             body: '测试222 body'
         });
@@ -549,59 +674,109 @@ function testCreatePR() {
     });
 }
 // testCreatePR()
-function test() {
+function getChangeFileContent() {
     return __awaiter(this, void 0, void 0, function* () {
-        const git = new github_1.Git();
-        const p = {
-            owner: 'JackTn',
-            repo: 'script_github_actions',
-            branch: 'main'
-        };
-        const branchInfo = yield git.getBranch(p);
-        console.log(branchInfo);
-    });
-}
-//   test()
-function getDiffFiles() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const git = new github_1.Git();
+        core.info(`0/2 Start get change files tree`);
+        console.time('Get change files tree cost time');
+        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
+        const git = new github_1.Git(GITHUB_TOKEN);
         const source = {
             owner: 'JackTn',
             repo: 'azure-rest-api-specs-pr',
             branch: 'main'
         };
         const branchInfo = yield git.getBranch(source);
-        const treeLists = yield git.getTree(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { tree_sha: branchInfo.data.commit.sha, recursive: '1' }));
-        core.info(`There are ${treeLists.data.tree.length} tree list in ${source.owner}/${source.repo}`);
         const filePath = 'specification/common-types';
-        //get diff files
-        const diffTrees = treeLists.data.tree
-            .filter(n => !n.path.startsWith(`${filePath}`))
-            .filter(n => n.type !== 'tree')
-            .map(n => ({
-            mode: n.mode,
-            path: n.path,
-            type: n.type,
-            sha: n.sha
-        }));
+        //   const treeLists = await git.getTree({
+        //     ..._.pick(source, ['owner', 'repo']),
+        //     tree_sha: branchInfo.data.commit.sha,
+        //     recursive: '1'
+        //   })
+        //   const diffTrees = treeLists.data.tree
+        //     .filter(n => n.path.startsWith(`${filePath}`))
+        //     .filter(n => n.type !== 'tree')
+        //     .map(n => ({
+        //       mode: n.mode,
+        //       path: n.path,
+        //       type: n.type,
+        //       sha: n.sha
+        //     }))
+        const treeLists = yield git.getTree(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { tree_sha: branchInfo.data.commit.sha }));
+        const diffTrees = yield git.getTreeByPath(filePath, _.pick(source, ['owner', 'repo']), treeLists);
+        core.info(`There are ${treeLists.data.tree.length} tree list in ${source.owner}/${source.repo}`);
+        console.timeEnd('Get change files tree cost time');
+        core.info(`1/2 Start get change files content`);
+        console.time(`Get change files content cost time`);
         const jsonFilesWithBase64Content = yield Promise.all(diffTrees.map((file) => __awaiter(this, void 0, void 0, function* () {
             const content = yield git.getContent(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { path: file.path, ref: `refs/heads/${source.branch}` }));
             return Object.assign(Object.assign({}, file), { content: content.data.content });
         })));
-        const diffTreeCont = jsonFilesWithBase64Content.map(file => ({
+        const changeFileContent = jsonFilesWithBase64Content.map(file => ({
             path: file.path,
             mode: '100644',
             type: 'blob',
             content: openapi_markdown_1.base64ToString(file.content)
         }));
+        console.timeEnd(`Get change files content cost time`);
         // here return diff tree
-        const newTree = yield git.createTree(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { tree: diffTreeCont }));
+        const newTree = yield git.createTree(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { tree: changeFileContent }));
         const commitResult = yield git.createCommit(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { tree: newTree.data.sha, message: 'fffffffff', parents: [branchInfo.data.commit.sha] }));
         const newBranch = 'testhHHH';
         yield git.createRef(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { ref: `refs/heads/${newBranch}`, sha: commitResult.data.sha }));
     });
 }
-getDiffFiles();
+// getChangeFileContent()
+// get change files from source reop
+// get Tree from dest repo
+// filter path from dest repo
+// merge changes files and dest repo files
+// create all tree
+// push then create pr
+function run123() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const source = {
+            owner: 'JackTn',
+            repo: 'azure-rest-api-specs-pr',
+            branch: 'main'
+        };
+        const dest = {
+            owner: 'JackTn',
+            repo: 'azure-rest-api-specs',
+            branch: 'main'
+        };
+        const filePath = 'specification/common-types';
+        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
+        const git = new github_1.Git(GITHUB_TOKEN);
+        const changeFileContent = yield git.getChangeFileContent(source, filePath);
+        const treeList = yield git.getTreeListWithOutPath(dest, filePath);
+        const newTree = [...changeFileContent, ...treeList];
+        const createTree = yield git.createTreeAll(dest, newTree, 500);
+        const createCommit = yield git.addCommit(dest, createTree, '测试哈哈哈哈');
+        const newBranch = 'testBranch20220909002';
+        yield git.createBranch(dest, createCommit, newBranch);
+        const title = 'test title1';
+        const body = 'test body1';
+        yield git.createPullRequest(dest, newBranch, title, body);
+        core.info(`Finished`);
+    });
+}
+// run123()
+function testDel() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
+        const octokit = github.getOctokit(GITHUB_TOKEN);
+        const source = {
+            owner: 'JackTn',
+            repo: 'azure-rest-api-specs',
+            branch: 'testBranch20220909001'
+        };
+        const branchInfo = yield octokit.repos.getBranch(source);
+        const path = 'specification/common-types';
+        const res = yield octokit.repos.deleteFile(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { path, message: 'test', sha: branchInfo.data.commit.sha }));
+        console.log(res);
+    });
+}
+testDel();
 //# sourceMappingURL=main.js.map
 
 /***/ }),

@@ -1,11 +1,15 @@
 # group:
 #   repos: |
-#     JackTn/script_github_actions@rpaas
+#     JackTn/script_github_actions@rpaas 
+##   JackTn/script_github_actions-pr@RPSaaSDev
 #   files:
 #     - source: specification/common-types/
 #       dest: specification/common-types/
 
-
+## 1.get all tree 2. content {content} 3. 
+# getTree && createTree
+# getTree 为了删除specification/common-types/ 所有文件
+# allTree 
 # group:
 #   repos: |
 #     JackTn/script_github_actions-pr@RPSaaSDev

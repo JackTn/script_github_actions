@@ -18,7 +18,7 @@
          - name: Checkout Repository
            uses: actions/checkout@v2
          - name: Repo File Sync Action
-           uses: JackTn/repo-file-sync-action@v1.0.1
+           uses: JackTn/repo-file-sync-action@v1.1.1
            # https://github.com/marketplace/actions/repo-file-sync-action#%EF%B8%8F-action-inputs
            with:
              GH_PAT: ${{secrets.GH_PAT}}

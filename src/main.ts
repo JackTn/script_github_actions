@@ -435,10 +435,10 @@ async function testCreatePR() {
   const head = 'JackTn:testdelete2022090711'
   const octokit = github.getOctokit('GITHUB_TOKEN')
   const pr = await octokit.pulls.create({
-    owner,
-    repo,
-    head,
-    base,
+    owner: 'JackTn',
+    repo: 'azure-rest-api-specs-pr',
+    head: 'JackTn:testdelete2022090711',
+    base: 'main',
     title: '测试机333 title',
     body: '测试222 body'
   })
@@ -472,45 +472,50 @@ async function testCreatePR() {
 }
 // testCreatePR()
 
-async function test() {
-  const git = new Git()
-  const p = {
-    owner: 'JackTn',
-    repo: 'script_github_actions',
-    branch: 'main'
-  }
-  const branchInfo = await git.getBranch(p)
-  console.log(branchInfo)
-}
-
-//   test()
-async function getDiffFiles() {
-  const git = new Git()
+async function getChangeFileContent() {
+  core.info(`0/2 Start get change files tree`)
+  console.time('Get change files tree cost time')
+  const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
+  const git = new Git(GITHUB_TOKEN)
   const source = {
     owner: 'JackTn',
     repo: 'azure-rest-api-specs-pr',
     branch: 'main'
   }
   const branchInfo = await git.getBranch(source)
+  const filePath = 'specification/common-types'
+
+  //   const treeLists = await git.getTree({
+  //     ..._.pick(source, ['owner', 'repo']),
+  //     tree_sha: branchInfo.data.commit.sha,
+  //     recursive: '1'
+  //   })
+  //   const diffTrees = treeLists.data.tree
+  //     .filter(n => n.path.startsWith(`${filePath}`))
+  //     .filter(n => n.type !== 'tree')
+  //     .map(n => ({
+  //       mode: n.mode,
+  //       path: n.path,
+  //       type: n.type,
+  //       sha: n.sha
+  //     }))
+
   const treeLists = await git.getTree({
     ..._.pick(source, ['owner', 'repo']),
-    tree_sha: branchInfo.data.commit.sha,
-    recursive: '1'
+    tree_sha: branchInfo.data.commit.sha
   })
+  const diffTrees = await git.getTreeByPath(
+    filePath,
+    _.pick(source, ['owner', 'repo']),
+    treeLists
+  )
   core.info(
     `There are ${treeLists.data.tree.length} tree list in ${source.owner}/${source.repo}`
   )
-  const filePath = 'specification/common-types'
-  //get diff files
-  const diffTrees = treeLists.data.tree
-    .filter(n => !n.path.startsWith(`${filePath}`))
-    .filter(n => n.type !== 'tree')
-    .map(n => ({
-      mode: n.mode,
-      path: n.path,
-      type: n.type,
-      sha: n.sha
-    }))
+  console.timeEnd('Get change files tree cost time')
+
+  core.info(`1/2 Start get change files content`)
+  console.time(`Get change files content cost time`)
   const jsonFilesWithBase64Content: any[] = await Promise.all(
     diffTrees.map(async file => {
       const content = await git.getContent({
@@ -523,20 +528,20 @@ async function getDiffFiles() {
     })
   )
 
-  const diffTreeCont = jsonFilesWithBase64Content.map<GitCreateTreeParamsTree>(
-    file => ({
-      path: file.path,
-      mode: '100644', // git mode for file (blob)
-      type: 'blob',
-      content: base64ToString(file.content)
-    })
-  )
-
+  const changeFileContent = jsonFilesWithBase64Content.map<
+    GitCreateTreeParamsTree
+  >(file => ({
+    path: file.path,
+    mode: '100644', // git mode for file (blob)
+    type: 'blob',
+    content: base64ToString(file.content)
+  }))
+  console.timeEnd(`Get change files content cost time`)
   // here return diff tree
 
   const newTree = await git.createTree({
     ..._.pick(source, ['owner', 'repo']),
-    tree: diffTreeCont
+    tree: changeFileContent
   })
 
   const commitResult = await git.createCommit({
@@ -554,4 +559,72 @@ async function getDiffFiles() {
   })
 }
 
-getDiffFiles()
+// getChangeFileContent()
+
+// get change files from source reop
+// get Tree from dest repo
+// filter path from dest repo
+// merge changes files and dest repo files
+// create all tree
+// push then create pr
+
+async function run123() {
+  const source = {
+    owner: 'JackTn',
+    repo: 'azure-rest-api-specs-pr',
+    branch: 'main'
+  }
+  const dest = {
+    owner: 'JackTn',
+    repo: 'azure-rest-api-specs',
+    branch: 'main'
+  }
+
+  const filePath = 'specification/common-types'
+
+  const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
+  const git = new Git(GITHUB_TOKEN)
+  const changeFileContent = await git.getChangeFileContent(source, filePath)
+  const treeList = await git.getTreeListWithOutPath(dest, filePath)
+
+  const newTree = [...changeFileContent, ...treeList]
+
+  const createTree = await git.createTreeAll(dest, newTree, 500)
+
+  const createCommit = await git.addCommit(dest, createTree, '测试哈哈哈哈')
+
+  const newBranch = 'testBranch20220909002'
+
+  await git.createBranch(dest, createCommit, newBranch)
+
+  const title = 'test title1'
+  const body = 'test body1'
+
+  await git.createPullRequest(dest, newBranch, title, body)
+
+  core.info(`Finished`)
+}
+
+// run123()
+
+async function testDel() {
+  const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
+  const octokit = github.getOctokit(GITHUB_TOKEN)
+  const source = {
+    owner: 'JackTn',
+    repo: 'azure-rest-api-specs',
+    branch: 'testBranch20220909001'
+  }
+  const branchInfo = await octokit.repos.getBranch(source)
+  const path = 'specification/common-types'
+  const res = await octokit.repos.deleteFile({
+    ..._.pick(source, ['owner', 'repo']),
+    path,
+    message: 'test',
+    sha: branchInfo.data.commit.sha
+  })
+
+  console.log(res)
+}
+
+testDel()

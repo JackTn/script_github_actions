@@ -2,27 +2,31 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as dotenv from 'dotenv'
 import {OctokitResponse} from '@octokit/types'
+import * as _ from 'lodash'
 import {
   GitCreateCommitParameters,
   GitCreateCommitResponseData,
   GitCreateRefRequest,
   GitCreateRefResponseData,
   GitCreateTreeParameters,
+  GitCreateTreeParamsTree,
   GitCreateTreeResponseData,
   GitGetTreeParameters,
   GitGetTreeResponseData,
+  PullsCreateRequest,
+  PullsCreateResponseData,
   ReposGetBranchParameters,
   ReposGetBranchResponseData,
   ReposGetContentParameters,
   ReposGetContentResponseData
 } from './types'
+import {base64ToString} from '@azure/openapi-markdown'
 
 dotenv.config()
 
 export class Git {
   private github
-  constructor() {
-    const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
+  constructor(GITHUB_TOKEN: string) {
     const octokit = github.getOctokit(GITHUB_TOKEN)
     this.github = octokit
   }
@@ -64,11 +68,91 @@ export class Git {
     return await this.github.git.getTree(getTreeRequest)
   }
 
-  //public async loopGetTree(
-  //  GetTreeRequest: GitGetTreeParameters
-  //): Promise<OctokitResponse<GitGetTreeResponseData>> {
-  //  return await this.github.git.getTree(GetTreeRequest)
-  //}
+  public async getTreeRecursive(
+    getTreeRequest: Omit<GitGetTreeParameters, 'recursive'>
+  ) {
+    // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
+    // so that need more times to get tree
+
+    const defaultTree = await this.github.git.getTree({
+      ...getTreeRequest
+    })
+    const specTree = defaultTree.data.tree.find(
+      n => n.type === 'tree' && n.path.startsWith('specification')
+    )
+    const svcFolder = await this.github.git.getTree({
+      ..._.pick(getTreeRequest, ['owner', 'repo']),
+      tree_sha: specTree!.sha
+    })
+    const svcTree = svcFolder.data.tree.find(
+      n => n.type === 'tree' && n.path.startsWith('common-types')
+    )
+
+    const treeList2 = await this.github.git.getTree({
+      ..._.pick(getTreeRequest, ['owner', 'repo']),
+      tree_sha: svcTree!.sha,
+      recursive: '1'
+    })
+    treeList2.data.tree.forEach(n => {
+      n.path = `specification/${'specification'}/${'common-types'}`
+    })
+
+    console.log(treeList2)
+
+    let treeList1 = await this.github.git.getTree({
+      ...getTreeRequest
+    })
+
+    let treeList = treeList1.data.tree
+
+    while (treeList.filter(n => n.type === 'tree').length !== 0) {
+      let tmpArr = treeList.filter(n => n.type === 'tree')
+      treeList = treeList.filter(n => n.type !== 'tree')
+      for (const item of tmpArr) {
+        let tree = await this.github.git.getTree({
+          ..._.pick(getTreeRequest, ['owner', 'repo']),
+          tree_sha: item.sha
+        })
+        treeList = [...treeList, ...tree.data.tree]
+      }
+    }
+
+    return treeList
+  }
+
+  public async getTreeByPath(
+    filePath: string,
+    getTreeRequest: Pick<GitGetTreeParameters, 'owner' | 'repo'>,
+    getDefaultTree: OctokitResponse<GitGetTreeResponseData>
+  ) {
+    const tmpLoopFiles = JSON.parse(JSON.stringify(filePath.split('/')))
+    let tmpDefaultTree = getDefaultTree
+    let tmpTree
+    let tmpTreeSha
+
+    while (tmpLoopFiles.length > 0) {
+      tmpTree = tmpDefaultTree.data.tree.find(n => n.path === tmpLoopFiles[0])
+      tmpTreeSha = tmpTree!.sha
+      tmpDefaultTree = await this.github.git.getTree({
+        ...getTreeRequest,
+        tree_sha: tmpTreeSha
+      })
+
+      tmpLoopFiles.shift()
+    }
+
+    const res = await this.github.git.getTree({
+      ...getTreeRequest,
+      tree_sha: tmpDefaultTree.data.sha,
+      recursive: '1'
+    })
+
+    res.data.tree.forEach(n => {
+      n.path = `${filePath}/${n.path}`
+    })
+
+    return res.data.tree.filter(n => n.type !== 'tree')
+  }
 
   public async createTree(
     createTreeRequest: GitCreateTreeParameters
@@ -76,9 +160,28 @@ export class Git {
     return await this.github.git.createTree(createTreeRequest)
   }
 
-  public async createTreeAll() {
+  public async createTreeAll(
+    branchRequest: ReposGetBranchParameters,
+    totalTree: GitCreateTreeParamsTree[],
+    ChunkLimit = 500
+  ) {
     // https://docs.github.com/rest/reference/git#create-a-tree
     // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
+    const groupTrees = _.chunk(totalTree, ChunkLimit)
+    let tmpTree
+    let tmpTreeSha
+
+    for (const tree of groupTrees) {
+      tmpTree = await this.createTree({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        tree,
+        base_tree: tmpTreeSha
+      })
+
+      tmpTreeSha = tmpTree.data.sha
+    }
+
+    return tmpTree as OctokitResponse<GitCreateTreeResponseData>
   }
 
   public async getContent(
@@ -93,9 +196,165 @@ export class Git {
     return await this.github.git.createCommit(createCommitRequest)
   }
 
+  public async addCommit(
+    branchRequest: ReposGetBranchParameters,
+    newTree: OctokitResponse<GitCreateTreeResponseData>,
+    message: string
+  ): Promise<OctokitResponse<GitCreateCommitResponseData>> {
+    const branchInfo = await this.getBranch(branchRequest)
+
+    return await this.github.git.createCommit({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      tree: newTree.data.sha,
+      message,
+      parents: [branchInfo.data.commit.sha]
+    })
+  }
+
   public async createRef(
     createRefRequest: GitCreateRefRequest
   ): Promise<OctokitResponse<GitCreateRefResponseData>> {
     return await this.github.git.createRef(createRefRequest)
+  }
+
+  public async createBranch(
+    branchRequest: ReposGetBranchParameters,
+    commitResult: OctokitResponse<GitCreateCommitResponseData>,
+    newBranch: string
+  ): Promise<OctokitResponse<GitCreateRefResponseData>> {
+    return await this.github.git.createRef({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      ref: `refs/heads/${newBranch}`,
+      sha: commitResult.data.sha
+    })
+  }
+
+  public async createPullRequest(
+    branchRequest: ReposGetBranchParameters,
+    newBranch: string,
+    title: string,
+    body: string,
+    labels?: string[],
+    assignees?: string[],
+    reviewers?: string[]
+  ): Promise<OctokitResponse<PullsCreateResponseData>> {
+    const pullRequest = await this.github.pulls.create({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      head: `${branchRequest.owner}:${newBranch}`,
+      base: branchRequest.branch,
+      title,
+      body
+    })
+
+    labels &&
+      (await this.github.issues.addLabels({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        issue_number: pullRequest.data.number,
+        labels
+      }))
+    assignees &&
+      (await this.github.issues.addAssignees({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        issue_number: pullRequest.data.number,
+        assignees
+      }))
+
+    reviewers &&
+      (await this.github.pulls.requestReviewers({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        pull_number: pullRequest.data.number,
+        reviewers
+      }))
+
+    return pullRequest
+  }
+
+  public async getChangeFileContent(
+    branchRequest: ReposGetBranchParameters,
+    filePath: string
+  ): Promise<GitCreateTreeParamsTree[]> {
+    core.info(`1/2 Start get change files tree`)
+    console.time('Get change files tree cost time')
+
+    const branchInfo = await this.getBranch(branchRequest)
+    const treeLists = await this.getTree({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      tree_sha: branchInfo.data.commit.sha
+    })
+    const diffTrees = await this.getTreeByPath(
+      filePath,
+      _.pick(branchRequest, ['owner', 'repo']),
+      treeLists
+    )
+    core.info(
+      `There are ${treeLists.data.tree.length} change files in ${branchRequest.owner}/${branchRequest.repo}`
+    )
+    console.timeEnd('Get change files tree cost time')
+
+    core.info(`2/2 Start get change files content`)
+    console.time(`Get change files content cost time`)
+    const jsonFilesWithBase64Content: any[] = await Promise.all(
+      diffTrees.map(async file => {
+        const content = await this.getContent({
+          ..._.pick(branchRequest, ['owner', 'repo']),
+          path: file.path,
+          ref: `refs/heads/${branchRequest.branch}`
+        })
+
+        return {...file, content: content.data.content}
+      })
+    )
+
+    const changeFileContent = jsonFilesWithBase64Content.map<
+      GitCreateTreeParamsTree
+    >(file => ({
+      path: file.path,
+      mode: '100644', // git mode for file (blob)
+      type: 'blob',
+      content: base64ToString(file.content)
+    }))
+    console.timeEnd(`Get change files content cost time`)
+
+    return changeFileContent
+  }
+
+  public async getTreeListWithOutPath(
+    branchRequest: ReposGetBranchParameters,
+    filePath: string
+  ): Promise<Partial<GitCreateTreeParamsTree>[]> {
+    core.info(`1/1 Start get tree`)
+    console.time('Get tree cost time')
+
+    const branchInfo = await this.getBranch(branchRequest)
+
+    // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
+    // so that need more times to get tree
+    const treeLists = await this.getTreeRecursive({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      tree_sha: branchInfo.data.commit.sha
+    })
+
+    // const treeLists = await this.getTree({
+    //   ..._.pick(branchRequest, ['owner', 'repo']),
+    //   tree_sha: treeLists1.data.sha,
+    //    recursive: '1'
+    // })
+
+    console.timeEnd('Get tree cost time')
+    core.info(
+      `There are ${treeLists.length} tree list in ${branchRequest.owner}/${branchRequest.repo}`
+    )
+
+    const res = treeLists
+      .filter(n => !n.path.startsWith(filePath))
+      .filter(n => n.type !== 'tree')
+      .map(n => ({
+        mode: n.mode,
+        path: n.path,
+        type: n.type,
+        sha: n.sha
+      }))
+
+    return res as Partial<GitCreateTreeParamsTree>[]
   }
 }
