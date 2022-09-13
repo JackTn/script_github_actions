@@ -86,28 +86,42 @@ class Git {
     }
     getTreeRecursive(getTreeRequest) {
         return __awaiter(this, void 0, void 0, function* () {
-            // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
-            // so that need more times to get tree
             const defaultTree = yield this.github.git.getTree(Object.assign({}, getTreeRequest));
-            const specTree = defaultTree.data.tree.find(n => n.type === 'tree' && n.path.startsWith('specification'));
-            const svcFolder = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: specTree.sha }));
-            const svcTree = svcFolder.data.tree.find(n => n.type === 'tree' && n.path.startsWith('common-types'));
-            const treeList2 = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: svcTree.sha, recursive: '1' }));
-            treeList2.data.tree.forEach(n => {
-                n.path = `specification/${'specification'}/${'common-types'}`;
-            });
-            console.log(treeList2);
-            let treeList1 = yield this.github.git.getTree(Object.assign({}, getTreeRequest));
-            let treeList = treeList1.data.tree;
-            while (treeList.filter(n => n.type === 'tree').length !== 0) {
-                let tmpArr = treeList.filter(n => n.type === 'tree');
-                treeList = treeList.filter(n => n.type !== 'tree');
-                for (const item of tmpArr) {
-                    let tree = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: item.sha }));
-                    treeList = [...treeList, ...tree.data.tree];
+            const level1Data = defaultTree.data.tree.filter(n => n.type !== 'tree');
+            const level1Tree = defaultTree.data.tree.filter(n => n.type === 'tree');
+            let level2Data = [];
+            let level3Data = [];
+            let n = 0;
+            let runTimes = 0;
+            console.time('GetTreeRecursive cost time');
+            for (const e1 of level1Tree) {
+                const level2 = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: e1.sha }));
+                level2.data.tree.forEach(n => (n.path = `${e1.path}/${n.path}`));
+                level2Data = [
+                    ...level2Data,
+                    ...level2.data.tree.filter(n => n.type !== 'tree')
+                ];
+                const level2Tree = level2.data.tree.filter(n => n.type === 'tree');
+                for (const e2 of level2Tree) {
+                    runTimes++;
+                    const level3 = yield this.github.git.getTree(Object.assign(Object.assign({}, _.pick(getTreeRequest, ['owner', 'repo'])), { tree_sha: e2.sha, recursive: '1' }));
+                    level3.data.tree.forEach(n => (n.path = `${e2.path}/${n.path}`));
+                    level3Data = [
+                        ...level3Data,
+                        ...level3.data.tree.filter(n => n.type !== 'tree')
+                    ];
+                    if (level3.data.truncated) {
+                        // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
+                        // so that need more times to get tree
+                        n++;
+                        console.log('truncated is true');
+                    }
                 }
             }
-            return treeList;
+            console.timeEnd('GetTreeRecursive cost time');
+            console.log(`n is ${n}`);
+            console.log(`runTimes is ${runTimes}`);
+            return [...level1Data, ...level2Data, ...level3Data];
         });
     }
     getTreeByPath(filePath, getTreeRequest, getDefaultTree) {
@@ -136,6 +150,7 @@ class Git {
     }
     createTreeAll(branchRequest, totalTree, ChunkLimit = 500) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.time('createTreeAll cost time');
             // https://docs.github.com/rest/reference/git#create-a-tree
             // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
             const groupTrees = _.chunk(totalTree, ChunkLimit);
@@ -145,6 +160,7 @@ class Git {
                 tmpTree = yield this.createTree(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { tree, base_tree: tmpTreeSha }));
                 tmpTreeSha = tmpTree.data.sha;
             }
+            console.timeEnd('createTreeAll cost time');
             return tmpTree;
         });
     }
@@ -220,11 +236,6 @@ class Git {
             // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
             // so that need more times to get tree
             const treeLists = yield this.getTreeRecursive(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { tree_sha: branchInfo.data.commit.sha }));
-            // const treeLists = await this.getTree({
-            //   ..._.pick(branchRequest, ['owner', 'repo']),
-            //   tree_sha: treeLists1.data.sha,
-            //    recursive: '1'
-            // })
             console.timeEnd('Get tree cost time');
             core.info(`There are ${treeLists.length} tree list in ${branchRequest.owner}/${branchRequest.repo}`);
             const res = treeLists
@@ -747,20 +758,26 @@ function run123() {
         const filePath = 'specification/common-types';
         const GITHUB_TOKEN = process.env.SECRET_TOKEN;
         const git = new github_1.Git(GITHUB_TOKEN);
-        const changeFileContent = yield git.getChangeFileContent(source, filePath);
         const treeList = yield git.getTreeListWithOutPath(dest, filePath);
+        const changeFileContent = yield git.getChangeFileContent(source, filePath);
         const newTree = [...changeFileContent, ...treeList];
         const createTree = yield git.createTreeAll(dest, newTree, 500);
         const createCommit = yield git.addCommit(dest, createTree, '测试哈哈哈哈');
-        const newBranch = 'testBranch20220909002';
-        yield git.createBranch(dest, createCommit, newBranch);
-        const title = 'test title1';
-        const body = 'test body1';
-        yield git.createPullRequest(dest, newBranch, title, body);
+        const branchName = 'testBranch20220913002';
+        const newBranch = yield git.createBranch(dest, createCommit, branchName);
+        if (newBranch.data.url) {
+            console.log('branch has been created');
+        }
+        const title = 'test title44';
+        const body = 'test body444';
+        const pullRequest = yield git.createPullRequest(dest, branchName, title, body);
+        if (pullRequest.data.url) {
+            console.log(`pullRequest has been created ${pullRequest.data.url}`);
+        }
         core.info(`Finished`);
     });
 }
-// run123()
+run123();
 function testDel() {
     return __awaiter(this, void 0, void 0, function* () {
         const GITHUB_TOKEN = process.env.SECRET_TOKEN;
@@ -776,7 +793,7 @@ function testDel() {
         console.log(res);
     });
 }
-testDel();
+// testDel()
 //# sourceMappingURL=main.js.map
 
 /***/ }),

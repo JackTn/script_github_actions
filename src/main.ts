@@ -584,8 +584,8 @@ async function run123() {
 
   const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
   const git = new Git(GITHUB_TOKEN)
-  const changeFileContent = await git.getChangeFileContent(source, filePath)
   const treeList = await git.getTreeListWithOutPath(dest, filePath)
+  const changeFileContent = await git.getChangeFileContent(source, filePath)
 
   const newTree = [...changeFileContent, ...treeList]
 
@@ -593,19 +593,26 @@ async function run123() {
 
   const createCommit = await git.addCommit(dest, createTree, '测试哈哈哈哈')
 
-  const newBranch = 'testBranch20220909002'
+  const branchName = 'testBranch20220913002'
 
-  await git.createBranch(dest, createCommit, newBranch)
+  const newBranch = await git.createBranch(dest, createCommit, branchName)
 
-  const title = 'test title1'
-  const body = 'test body1'
+  if (newBranch.data.url) {
+    console.log('branch has been created')
+  }
 
-  await git.createPullRequest(dest, newBranch, title, body)
+  const title = 'test title44'
+  const body = 'test body444'
+
+  const pullRequest = await git.createPullRequest(dest, branchName, title, body)
+  if (pullRequest.data.url) {
+    console.log(`pullRequest has been created ${pullRequest.data.url}`)
+  }
 
   core.info(`Finished`)
 }
 
-// run123()
+run123()
 
 async function testDel() {
   const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
@@ -626,5 +633,4 @@ async function testDel() {
 
   console.log(res)
 }
-
-testDel()
+// testDel()

@@ -13,6 +13,7 @@ import {
   GitCreateTreeResponseData,
   GitGetTreeParameters,
   GitGetTreeResponseData,
+  GitTree,
   PullsCreateRequest,
   PullsCreateResponseData,
   ReposGetBranchParameters,
@@ -71,53 +72,59 @@ export class Git {
   public async getTreeRecursive(
     getTreeRequest: Omit<GitGetTreeParameters, 'recursive'>
   ) {
-    // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
-    // so that need more times to get tree
-
     const defaultTree = await this.github.git.getTree({
       ...getTreeRequest
     })
-    const specTree = defaultTree.data.tree.find(
-      n => n.type === 'tree' && n.path.startsWith('specification')
+
+    const level1Data: GitTree[] = defaultTree.data.tree.filter(
+      n => n.type !== 'tree'
     )
-    const svcFolder = await this.github.git.getTree({
-      ..._.pick(getTreeRequest, ['owner', 'repo']),
-      tree_sha: specTree!.sha
-    })
-    const svcTree = svcFolder.data.tree.find(
-      n => n.type === 'tree' && n.path.startsWith('common-types')
-    )
+    const level1Tree = defaultTree.data.tree.filter(n => n.type === 'tree')
 
-    const treeList2 = await this.github.git.getTree({
-      ..._.pick(getTreeRequest, ['owner', 'repo']),
-      tree_sha: svcTree!.sha,
-      recursive: '1'
-    })
-    treeList2.data.tree.forEach(n => {
-      n.path = `specification/${'specification'}/${'common-types'}`
-    })
+    let level2Data: GitTree[] = []
+    let level3Data: GitTree[] = []
 
-    console.log(treeList2)
+    let n: number = 0
+    let runTimes: number = 0
 
-    let treeList1 = await this.github.git.getTree({
-      ...getTreeRequest
-    })
-
-    let treeList = treeList1.data.tree
-
-    while (treeList.filter(n => n.type === 'tree').length !== 0) {
-      let tmpArr = treeList.filter(n => n.type === 'tree')
-      treeList = treeList.filter(n => n.type !== 'tree')
-      for (const item of tmpArr) {
-        let tree = await this.github.git.getTree({
+    console.time('GetTreeRecursive cost time')
+    for (const e1 of level1Tree) {
+      const level2 = await this.github.git.getTree({
+        ..._.pick(getTreeRequest, ['owner', 'repo']),
+        tree_sha: e1!.sha
+      })
+      level2.data.tree.forEach(n => (n.path = `${e1.path}/${n.path}`))
+      level2Data = [
+        ...level2Data,
+        ...level2.data.tree.filter(n => n.type !== 'tree')
+      ]
+      const level2Tree = level2.data.tree.filter(n => n.type === 'tree')
+      for (const e2 of level2Tree) {
+        runTimes++
+        const level3 = await this.github.git.getTree({
           ..._.pick(getTreeRequest, ['owner', 'repo']),
-          tree_sha: item.sha
+          tree_sha: e2!.sha,
+          recursive: '1'
         })
-        treeList = [...treeList, ...tree.data.tree]
+        level3.data.tree.forEach(n => (n.path = `${e2.path}/${n.path}`))
+        level3Data = [
+          ...level3Data,
+          ...level3.data.tree.filter(n => n.type !== 'tree')
+        ]
+        if (level3.data.truncated) {
+          // If `truncated` is `true` in the response then the number of items in the `tree` array exceeded our maximum limit. If you need to fetch more items, use the non-recursive method of fetching trees, and fetch one sub-tree at a time.
+          // so that need more times to get tree
+          n++
+          console.log('truncated is true')
+        }
       }
     }
 
-    return treeList
+    console.timeEnd('GetTreeRecursive cost time')
+    console.log(`n is ${n}`)
+    console.log(`runTimes is ${runTimes}`)
+
+    return [...level1Data, ...level2Data, ...level3Data]
   }
 
   public async getTreeByPath(
@@ -165,6 +172,7 @@ export class Git {
     totalTree: GitCreateTreeParamsTree[],
     ChunkLimit = 500
   ) {
+    console.time('createTreeAll cost time')
     // https://docs.github.com/rest/reference/git#create-a-tree
     // Sorry, your request timed out. It's likely that your input was too large to process. Consider building the tree incrementally, or building the commits you need in a local clone of the repository and then pushing them to GitHub.
     const groupTrees = _.chunk(totalTree, ChunkLimit)
@@ -181,6 +189,7 @@ export class Git {
       tmpTreeSha = tmpTree.data.sha
     }
 
+    console.timeEnd('createTreeAll cost time')
     return tmpTree as OctokitResponse<GitCreateTreeResponseData>
   }
 
@@ -333,12 +342,6 @@ export class Git {
       ..._.pick(branchRequest, ['owner', 'repo']),
       tree_sha: branchInfo.data.commit.sha
     })
-
-    // const treeLists = await this.getTree({
-    //   ..._.pick(branchRequest, ['owner', 'repo']),
-    //   tree_sha: treeLists1.data.sha,
-    //    recursive: '1'
-    // })
 
     console.timeEnd('Get tree cost time')
     core.info(
