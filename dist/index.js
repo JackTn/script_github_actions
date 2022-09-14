@@ -300,8 +300,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
-const github = __importStar(__webpack_require__(5438));
-const _ = __importStar(__webpack_require__(250));
 const dotenv = __importStar(__webpack_require__(2437));
 dotenv.config();
 const github_1 = __webpack_require__(5928);
@@ -347,23 +345,7 @@ function run123() {
         core.info(`Finished`);
     });
 }
-run123();
-function testDel() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const GITHUB_TOKEN = process.env.SECRET_TOKEN;
-        const octokit = github.getOctokit(GITHUB_TOKEN);
-        const source = {
-            owner: 'JackTn',
-            repo: 'azure-rest-api-specs',
-            branch: 'testBranch20220909001'
-        };
-        const branchInfo = yield octokit.rest.repos.getBranch(source);
-        const path = 'specification/common-types';
-        const res = yield octokit.rest.repos.deleteFile(Object.assign(Object.assign({}, _.pick(source, ['owner', 'repo'])), { path, message: 'test', sha: branchInfo.data.commit.sha }));
-        console.log(res);
-    });
-}
-// testDel()
+// run123()
 function testGetInput() {
     return __awaiter(this, void 0, void 0, function* () {
         const GIT_EMAIL = core.getInput('GIT_EMAIL');
@@ -375,7 +357,8 @@ function testGetInput() {
         const GIT_EMAIL1 = core.getInput('GIT_EMAIL');
         core.info(`GIT_EMAIL ${GIT_EMAIL} ${typeof GIT_EMAIL1}`);
         const ASSIGNEES1 = core.getMultilineInput('ASSIGNEES');
-        core.info(`ASSIGNEES ${ASSIGNEES} ${typeof ASSIGNEES1}`);
+        core.info(`ASSIGNEES1 ${ASSIGNEES[0]} ${typeof ASSIGNEES1}`);
+        core.info(`ASSIGNEES2 ${ASSIGNEES[1]} ${typeof ASSIGNEES1}`);
         const PR_LABELS1 = core.getBooleanInput('PR_LABELS');
         core.info(`PR_LABELS ${PR_LABELS1} ${typeof PR_LABELS1}`);
         //   core.info('\u001b[43mThis background will be yellow')
@@ -389,7 +372,7 @@ function testGetInput() {
         //   core.setFailed('You must provide either GH_PAT or GH_INSTALLATION_TOKEN')
     });
 }
-// testGetInput()
+testGetInput();
 //# sourceMappingURL=main.js.map
 
 /***/ }),

@@ -18,7 +18,7 @@ import {Git} from './github'
 // create all tree
 // push then create pr
 
-async function run123() {
+async function run() {
   const source = {
     owner: 'JackTn',
     repo: 'azure-rest-api-specs-pr',
@@ -65,28 +65,7 @@ async function run123() {
   core.info(`Finished`)
 }
 
-run123()
-
-async function testDel() {
-  const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
-  const octokit = github.getOctokit(GITHUB_TOKEN)
-  const source = {
-    owner: 'JackTn',
-    repo: 'azure-rest-api-specs',
-    branch: 'testBranch20220909001'
-  }
-  const branchInfo = await octokit.rest.repos.getBranch(source)
-  const path = 'specification/common-types'
-  const res = await octokit.rest.repos.deleteFile({
-    ..._.pick(source, ['owner', 'repo']),
-    path,
-    message: 'test',
-    sha: branchInfo.data.commit.sha
-  })
-
-  console.log(res)
-}
-// testDel()
+// run()
 
 async function testGetInput() {
   const GIT_EMAIL = core.getInput('GIT_EMAIL')
@@ -99,7 +78,8 @@ async function testGetInput() {
   const GIT_EMAIL1 = core.getInput('GIT_EMAIL')
   core.info(`GIT_EMAIL ${GIT_EMAIL} ${typeof GIT_EMAIL1}`)
   const ASSIGNEES1 = core.getMultilineInput('ASSIGNEES')
-  core.info(`ASSIGNEES ${ASSIGNEES} ${typeof ASSIGNEES1}`)
+  core.info(`ASSIGNEES1 ${ASSIGNEES[0]} ${typeof ASSIGNEES1}`)
+  core.info(`ASSIGNEES2 ${ASSIGNEES[1]} ${typeof ASSIGNEES1}`)
   const PR_LABELS1 = core.getBooleanInput('PR_LABELS')
   core.info(`PR_LABELS ${PR_LABELS1} ${typeof PR_LABELS1}`)
   //   core.info('\u001b[43mThis background will be yellow')
@@ -113,4 +93,4 @@ async function testGetInput() {
   //   core.setFailed('You must provide either GH_PAT or GH_INSTALLATION_TOKEN')
 }
 
-// testGetInput()
+testGetInput()
