@@ -93,24 +93,25 @@ export interface GitGetTreeResponseData {
 export type GitCreateTreeParameters = Endpoints['POST /repos/{owner}/{repo}/git/trees']['parameters']
 
 export interface GitTree {
-  path: string
-  mode: string
-  type: string
-  size: number
-  sha: string
-  url: string
+  path?: string
+  mode?: string
+  type?: string
+  size?: number
+  sha?: string
+  url?: string
 }
 
 export interface GitCreateTreeResponseData {
   sha: string
   url: string
+  truncated: boolean
   tree: {
-    path: string
-    mode: string
-    type: string
-    size: number
-    sha: string
-    url: string
+    path?: string | undefined
+    mode?: string | undefined
+    type?: string | undefined
+    sha?: string | undefined
+    size?: number | undefined
+    url?: string | undefined
   }[]
 }
 

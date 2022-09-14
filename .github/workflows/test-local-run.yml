@@ -11,4 +11,13 @@
      runs-on: ubuntu-latest
      steps:
        - uses: actions/checkout@v2
-       - uses: ./
+       - name: sync-common-types-files-local
+         uses: ./
+         with:
+            GIT_EMAIL: 347142915@qq.com
+            GIT_USERNAME: JackTn
+            ASSIGNEES: |
+              JackTn
+              Tianx
+            PR_LABELS: false
+

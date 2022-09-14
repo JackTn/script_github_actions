@@ -94,3 +94,7 @@ inputs:
 runs:
   using: 'node12'
   main: 'dist/index.js'
+
+branding:
+  icon: 'git-merge'
+  color: 'blue'

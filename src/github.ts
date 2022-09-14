@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as dotenv from 'dotenv'
-import {OctokitResponse} from '@octokit/types'
+import {Endpoints, OctokitResponse} from '@octokit/types'
 import * as _ from 'lodash'
 import {
   GitCreateCommitParameters,
@@ -29,43 +29,39 @@ export class Git {
   private github
   constructor(GITHUB_TOKEN: string) {
     const octokit = github.getOctokit(GITHUB_TOKEN)
-    this.github = octokit
+    this.github = octokit.rest
   }
 
   public async coreInfo() {
-    const {owner, repo} = this.github.context.repo
-    const payload = this.github.context.payload
-    const eventName = this.github.context.eventName
-    const sha = this.github.context.sha
-    const ref = this.github.context.ref
-    const action = this.github.context.action
-    const runNumber = this.github.context.runNumber
-    const runId = this.github.context.runId
-
-    core.info(`owner ${owner}`)
-    core.info(`repo ${repo}`)
-    core.info(`payload ${JSON.stringify(payload)}`)
-    core.info(`eventName ${eventName}`)
-    core.info(`sha ${sha}`)
-    core.info(`ref ${ref}`)
-    core.info(`action ${action}`)
-    core.info(`runNumber ${runNumber}`)
-    core.info(`runId ${runId}`)
+    //const {owner, repo} = this.github.context.repo
+    //const payload = this.github.context.payload
+    //const eventName = this.github.context.eventName
+    //const sha = this.github.context.sha
+    //const ref = this.github.context.ref
+    //const action = this.github.context.action
+    //const runNumber = this.github.context.runNumber
+    //const runId = this.github.context.runId
+    //
+    //core.info(`owner ${owner}`)
+    //core.info(`repo ${repo}`)
+    //core.info(`payload ${JSON.stringify(payload)}`)
+    //core.info(`eventName ${eventName}`)
+    //core.info(`sha ${sha}`)
+    //core.info(`ref ${ref}`)
+    //core.info(`action ${action}`)
+    //core.info(`runNumber ${runNumber}`)
+    //core.info(`runId ${runId}`)
   }
 
   public async debugInfo() {
     console.log(this.github)
   }
 
-  public async getBranch(
-    getBranchRequest: ReposGetBranchParameters
-  ): Promise<OctokitResponse<ReposGetBranchResponseData>> {
+  public async getBranch(getBranchRequest: ReposGetBranchParameters) {
     return await this.github.repos.getBranch(getBranchRequest)
   }
 
-  public async getTree(
-    getTreeRequest: GitGetTreeParameters
-  ): Promise<OctokitResponse<GitGetTreeResponseData>> {
+  public async getTree(getTreeRequest: GitGetTreeParameters) {
     return await this.github.git.getTree(getTreeRequest)
   }
 
@@ -91,7 +87,7 @@ export class Git {
     for (const e1 of level1Tree) {
       const level2 = await this.github.git.getTree({
         ..._.pick(getTreeRequest, ['owner', 'repo']),
-        tree_sha: e1!.sha
+        tree_sha: e1.sha!
       })
       level2.data.tree.forEach(n => (n.path = `${e1.path}/${n.path}`))
       level2Data = [
@@ -103,7 +99,7 @@ export class Git {
         runTimes++
         const level3 = await this.github.git.getTree({
           ..._.pick(getTreeRequest, ['owner', 'repo']),
-          tree_sha: e2!.sha,
+          tree_sha: e2.sha!,
           recursive: '1'
         })
         level3.data.tree.forEach(n => (n.path = `${e2.path}/${n.path}`))
@@ -130,7 +126,7 @@ export class Git {
   public async getTreeByPath(
     filePath: string,
     getTreeRequest: Pick<GitGetTreeParameters, 'owner' | 'repo'>,
-    getDefaultTree: OctokitResponse<GitGetTreeResponseData>
+    getDefaultTree: Endpoints['GET /repos/{owner}/{repo}/git/trees/{tree_sha}']['response']
   ) {
     const tmpLoopFiles = JSON.parse(JSON.stringify(filePath.split('/')))
     let tmpDefaultTree = getDefaultTree
@@ -139,10 +135,10 @@ export class Git {
 
     while (tmpLoopFiles.length > 0) {
       tmpTree = tmpDefaultTree.data.tree.find(n => n.path === tmpLoopFiles[0])
-      tmpTreeSha = tmpTree!.sha
+      tmpTreeSha = tmpTree!.sha!
       tmpDefaultTree = await this.github.git.getTree({
         ...getTreeRequest,
-        tree_sha: tmpTreeSha
+        tree_sha: tmpTreeSha!
       })
 
       tmpLoopFiles.shift()
@@ -161,9 +157,7 @@ export class Git {
     return res.data.tree.filter(n => n.type !== 'tree')
   }
 
-  public async createTree(
-    createTreeRequest: GitCreateTreeParameters
-  ): Promise<OctokitResponse<GitCreateTreeResponseData>> {
+  public async createTree(createTreeRequest: GitCreateTreeParameters) {
     return await this.github.git.createTree(createTreeRequest)
   }
 
@@ -192,16 +186,15 @@ export class Git {
     console.timeEnd('createTreeAll cost time')
     return tmpTree as OctokitResponse<GitCreateTreeResponseData>
   }
-
   public async getContent(
-    getContentRequest: ReposGetContentParameters
-  ): Promise<OctokitResponse<ReposGetContentResponseData>> {
+    getContentRequest: Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['parameters']
+  ) {
     return await this.github.repos.getContent(getContentRequest)
   }
 
   public async createCommit(
-    createCommitRequest: GitCreateCommitParameters
-  ): Promise<OctokitResponse<GitCreateCommitResponseData>> {
+    createCommitRequest: Endpoints['POST /repos/{owner}/{repo}/git/commits']['parameters']
+  ) {
     return await this.github.git.createCommit(createCommitRequest)
   }
 
@@ -209,7 +202,7 @@ export class Git {
     branchRequest: ReposGetBranchParameters,
     newTree: OctokitResponse<GitCreateTreeResponseData>,
     message: string
-  ): Promise<OctokitResponse<GitCreateCommitResponseData>> {
+  ): Promise<Endpoints['POST /repos/{owner}/{repo}/git/commits']['response']> {
     const branchInfo = await this.getBranch(branchRequest)
 
     return await this.github.git.createCommit({
@@ -228,7 +221,7 @@ export class Git {
 
   public async createBranch(
     branchRequest: ReposGetBranchParameters,
-    commitResult: OctokitResponse<GitCreateCommitResponseData>,
+    commitResult: Endpoints['POST /repos/{owner}/{repo}/git/commits']['response'],
     newBranch: string
   ): Promise<OctokitResponse<GitCreateRefResponseData>> {
     return await this.github.git.createRef({
@@ -246,7 +239,7 @@ export class Git {
     labels?: string[],
     assignees?: string[],
     reviewers?: string[]
-  ): Promise<OctokitResponse<PullsCreateResponseData>> {
+  ) {
     const pullRequest = await this.github.pulls.create({
       ..._.pick(branchRequest, ['owner', 'repo']),
       head: `${branchRequest.owner}:${newBranch}`,
@@ -304,9 +297,9 @@ export class Git {
     console.time(`Get change files content cost time`)
     const jsonFilesWithBase64Content: any[] = await Promise.all(
       diffTrees.map(async file => {
-        const content = await this.getContent({
+        const content: any = await this.getContent({
           ..._.pick(branchRequest, ['owner', 'repo']),
-          path: file.path,
+          path: file.path!,
           ref: `refs/heads/${branchRequest.branch}`
         })
 
@@ -349,7 +342,7 @@ export class Git {
     )
 
     const res = treeLists
-      .filter(n => !n.path.startsWith(filePath))
+      .filter(n => !n.path!.startsWith(filePath))
       .filter(n => n.type !== 'tree')
       .map(n => ({
         mode: n.mode,
