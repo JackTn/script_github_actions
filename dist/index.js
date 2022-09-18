@@ -269,29 +269,39 @@ class Git {
             return yield this.github.git.createRef(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { ref: `refs/heads/${newBranch}`, sha: commitResult.data.sha }));
         });
     }
-    createPullRequest(branchRequest, newBranch, title, body, labels, assignees, reviewers) {
+    pullRequestAdd(branchRequest, pullRequest, labels, assignees, reviewers, teamReviewers) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (labels !== undefined && labels.length > 0) {
+                core.info(`Adding label(s) "${labels.join(', ')}" to PR`);
+                yield this.github.issues.addLabels(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, labels }));
+            }
+            if (assignees !== undefined && assignees.length > 0) {
+                core.info(`Adding assignee(s) "${assignees.join(', ')}" to PR`);
+                yield this.github.issues.addAssignees(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, assignees }));
+            }
+            if (reviewers !== undefined && reviewers.length > 0) {
+                core.info(`Adding reviewer(s) "${reviewers.join(', ')}" to PR`);
+                yield this.github.pulls.requestReviewers(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { pull_number: pullRequest.data.number, reviewers }));
+            }
+            if (teamReviewers !== undefined && teamReviewers.length > 0) {
+                core.info(`Adding team reviewer(s) "${teamReviewers.join(', ')}" to PR`);
+                yield this.github.pulls.requestReviewers(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { pull_number: pullRequest.data.number, team_reviewers: teamReviewers }));
+            }
+        });
+    }
+    createPullRequest(branchRequest, newBranch, title, body, labels, assignees, reviewers, teamReviewers) {
         return __awaiter(this, void 0, void 0, function* () {
             const pullRequest = yield this.github.pulls.create(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { head: `${branchRequest.owner}:${newBranch}`, base: branchRequest.branch, title,
                 body }));
-            labels &&
-                (yield this.github.issues.addLabels(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, labels })));
-            assignees &&
-                (yield this.github.issues.addAssignees(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, assignees })));
-            reviewers &&
-                (yield this.github.pulls.requestReviewers(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { pull_number: pullRequest.data.number, reviewers })));
+            yield this.pullRequestAdd(branchRequest, pullRequest, labels, assignees, reviewers, teamReviewers);
             return pullRequest;
         });
     }
-    updatePullRequest(branchRequest, prNumber, title, body, labels, assignees, reviewers) {
+    updatePullRequest(branchRequest, prNumber, title, body, labels, assignees, reviewers, teamReviewers) {
         return __awaiter(this, void 0, void 0, function* () {
             const pullRequest = yield this.github.pulls.update(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { pull_number: prNumber, title,
                 body }));
-            labels &&
-                (yield this.github.issues.addLabels(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, labels })));
-            assignees &&
-                (yield this.github.issues.addAssignees(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { issue_number: pullRequest.data.number, assignees })));
-            reviewers &&
-                (yield this.github.pulls.requestReviewers(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { pull_number: pullRequest.data.number, reviewers })));
+            yield this.pullRequestAdd(branchRequest, pullRequest, labels, assignees, reviewers, teamReviewers);
             return pullRequest;
         });
     }
@@ -400,12 +410,6 @@ const github = __importStar(__nccwpck_require__(5438));
 const config_1 = __importDefault(__nccwpck_require__(88));
 const github_1 = __nccwpck_require__(5928);
 const utils_1 = __nccwpck_require__(918);
-// get change files from source repo
-// get Tree from dest repo
-// filter path from dest repo
-// merge changes files and dest repo files
-// create all tree
-// push then create pr
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`GITHUB_TOKEN ${config_1.default.GITHUB_TOKEN} ${typeof config_1.default.GITHUB_TOKEN}`);
@@ -458,14 +462,13 @@ function run() {
             yield git.updatePullRequest(dest, isExistingPR.number, pullRequestTitle, (0, utils_1.dedent)(`
         ⚠️ This PR is being automatically resync ⚠️
         ${pullRequestBody}
-    `), config_1.default.PR_LABELS, config_1.default.ASSIGNEES, config_1.default.REVIEWERS);
+    `), config_1.default.PR_LABELS, config_1.default.ASSIGNEES, config_1.default.REVIEWERS, config_1.default.TEAM_REVIEWERS);
+            core.notice(`Pull Request #${isExistingPR.number} updated: ${isExistingPR.html_url}`);
         }
         else {
             yield git.createBranch(dest, createCommit, branchName);
-            yield git.createPullRequest(dest, branchName, pullRequestTitle, pullRequestBody),
-                config_1.default.PR_LABELS,
-                config_1.default.ASSIGNEES,
-                config_1.default.REVIEWERS;
+            const pullRequest = yield git.createPullRequest(dest, branchName, pullRequestTitle, pullRequestBody, config_1.default.PR_LABELS, config_1.default.ASSIGNEES, config_1.default.REVIEWERS, config_1.default.TEAM_REVIEWERS);
+            core.notice(`Pull Request #${pullRequest.data.number} created: ${pullRequest.data.html_url}`);
         }
         core.info(`Finished`);
     });

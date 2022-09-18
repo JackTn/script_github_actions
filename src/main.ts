@@ -82,19 +82,28 @@ async function run() {
     `),
       context.PR_LABELS,
       context.ASSIGNEES,
-      context.REVIEWERS
+      context.REVIEWERS,
+      context.TEAM_REVIEWERS
+    )
+
+    core.notice(
+      `Pull Request #${isExistingPR.number} updated: ${isExistingPR.html_url}`
     )
   } else {
     await git.createBranch(dest, createCommit, branchName)
-    await git.createPullRequest(
+    const pullRequest = await git.createPullRequest(
       dest,
       branchName,
       pullRequestTitle,
-      pullRequestBody
-    ),
+      pullRequestBody,
       context.PR_LABELS,
       context.ASSIGNEES,
-      context.REVIEWERS
+      context.REVIEWERS,
+      context.TEAM_REVIEWERS
+    )
+    core.notice(
+      `Pull Request #${pullRequest.data.number} created: ${pullRequest.data.html_url}`
+    )
   }
 
   core.info(`Finished`)

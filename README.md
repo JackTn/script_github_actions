@@ -15,7 +15,11 @@
 
 ### debug locally & run github action locally
 * debug locally : create .env file in your root directory and set **source** parameter that src/main.ts by hand
+* npm run build then npm run start or press F5
+
+
 * debug github action locally: download docker before and npm install [act](https://github.com/nektos/act) -g then run act command to debug locally
+* npm run all then run act 
   
 _notice: when you use act the github environment like tooken sould use truth_
 

@@ -196,6 +196,51 @@ export class Git {
     })
   }
 
+  public async pullRequestAdd(
+    branchRequest: ReposGetBranchParameters,
+    pullRequest: Endpoints['POST /repos/{owner}/{repo}/pulls']['response'],
+    labels?: string[],
+    assignees?: string[],
+    reviewers?: string[],
+    teamReviewers?: string[]
+  ) {
+    if (labels !== undefined && labels.length > 0) {
+      core.info(`Adding label(s) "${labels.join(', ')}" to PR`)
+      await this.github.issues.addLabels({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        issue_number: pullRequest.data.number,
+        labels
+      })
+    }
+
+    if (assignees !== undefined && assignees.length > 0) {
+      core.info(`Adding assignee(s) "${assignees.join(', ')}" to PR`)
+      await this.github.issues.addAssignees({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        issue_number: pullRequest.data.number,
+        assignees
+      })
+    }
+
+    if (reviewers !== undefined && reviewers.length > 0) {
+      core.info(`Adding reviewer(s) "${reviewers.join(', ')}" to PR`)
+      await this.github.pulls.requestReviewers({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        pull_number: pullRequest.data.number,
+        reviewers
+      })
+    }
+
+    if (teamReviewers !== undefined && teamReviewers.length > 0) {
+      core.info(`Adding team reviewer(s) "${teamReviewers.join(', ')}" to PR`)
+      await this.github.pulls.requestReviewers({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        pull_number: pullRequest.data.number,
+        team_reviewers: teamReviewers
+      })
+    }
+  }
+
   public async createPullRequest(
     branchRequest: ReposGetBranchParameters,
     newBranch: string,
@@ -203,7 +248,8 @@ export class Git {
     body: string,
     labels?: string[],
     assignees?: string[],
-    reviewers?: string[]
+    reviewers?: string[],
+    teamReviewers?: string[]
   ) {
     const pullRequest = await this.github.pulls.create({
       ..._.pick(branchRequest, ['owner', 'repo']),
@@ -213,25 +259,14 @@ export class Git {
       body
     })
 
-    labels &&
-      (await this.github.issues.addLabels({
-        ..._.pick(branchRequest, ['owner', 'repo']),
-        issue_number: pullRequest.data.number,
-        labels
-      }))
-    assignees &&
-      (await this.github.issues.addAssignees({
-        ..._.pick(branchRequest, ['owner', 'repo']),
-        issue_number: pullRequest.data.number,
-        assignees
-      }))
-
-    reviewers &&
-      (await this.github.pulls.requestReviewers({
-        ..._.pick(branchRequest, ['owner', 'repo']),
-        pull_number: pullRequest.data.number,
-        reviewers
-      }))
+    await this.pullRequestAdd(
+      branchRequest,
+      pullRequest,
+      labels,
+      assignees,
+      reviewers,
+      teamReviewers
+    )
 
     return pullRequest
   }
@@ -243,7 +278,8 @@ export class Git {
     body: string,
     labels?: string[],
     assignees?: string[],
-    reviewers?: string[]
+    reviewers?: string[],
+    teamReviewers?: string[]
   ) {
     const pullRequest = await this.github.pulls.update({
       ..._.pick(branchRequest, ['owner', 'repo']),
@@ -252,25 +288,14 @@ export class Git {
       body
     })
 
-    labels &&
-      (await this.github.issues.addLabels({
-        ..._.pick(branchRequest, ['owner', 'repo']),
-        issue_number: pullRequest.data.number,
-        labels
-      }))
-    assignees &&
-      (await this.github.issues.addAssignees({
-        ..._.pick(branchRequest, ['owner', 'repo']),
-        issue_number: pullRequest.data.number,
-        assignees
-      }))
-
-    reviewers &&
-      (await this.github.pulls.requestReviewers({
-        ..._.pick(branchRequest, ['owner', 'repo']),
-        pull_number: pullRequest.data.number,
-        reviewers
-      }))
+    await this.pullRequestAdd(
+      branchRequest,
+      pullRequest as any,
+      labels,
+      assignees,
+      reviewers,
+      teamReviewers
+    )
 
     return pullRequest
   }

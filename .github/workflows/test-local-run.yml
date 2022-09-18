@@ -18,3 +18,4 @@
             REPO: script_github_actions-pr
             BRANCH: main
             FILE_PATH: specification/common-types
+            GITHUB_TOKEN: ???????
