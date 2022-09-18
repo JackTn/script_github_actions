@@ -8,7 +8,8 @@ export interface GitCreateTreeParamsTree {
   content?: string
 }
 
-export type ReposGetBranchParameters = Endpoints['GET /repos/{owner}/{repo}/branches/{branch}']['parameters']
+export type ReposGetBranchParameters =
+  Endpoints['GET /repos/{owner}/{repo}/branches/{branch}']['parameters']
 
 export interface ReposGetBranchResponseData {
   name: string
@@ -74,7 +75,8 @@ export interface ReposGetBranchResponseData {
   protection_url: string
 }
 
-export type GitGetTreeParameters = Endpoints['GET /repos/{owner}/{repo}/git/trees/{tree_sha}']['parameters']
+export type GitGetTreeParameters =
+  Endpoints['GET /repos/{owner}/{repo}/git/trees/{tree_sha}']['parameters']
 
 export interface GitGetTreeResponseData {
   sha: string
@@ -90,7 +92,8 @@ export interface GitGetTreeResponseData {
   truncated: boolean
 }
 
-export type GitCreateTreeParameters = Endpoints['POST /repos/{owner}/{repo}/git/trees']['parameters']
+export type GitCreateTreeParameters =
+  Endpoints['POST /repos/{owner}/{repo}/git/trees']['parameters']
 
 export interface GitTree {
   path?: string
@@ -115,7 +118,8 @@ export interface GitCreateTreeResponseData {
   }[]
 }
 
-export type ReposGetContentParameters = Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['parameters']
+export type ReposGetContentParameters =
+  Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['parameters']
 
 export interface ReposGetContentResponseData {
   type: string
@@ -149,6 +153,7 @@ declare type GitCreateCommitParamsCommitter = {
   email?: string
   date?: string
 }
+
 // export type GitCreateCommitParameters = Endpoints["POST /repos/{owner}/{repo}/git/commits"]['parameters']
 export type GitCreateCommitParameters = {
   owner: string
@@ -210,7 +215,8 @@ export interface GitCreateCommitResponseData {
   }
 }
 
-export type GitCreateRefRequest = Endpoints['POST /repos/{owner}/{repo}/git/refs']['parameters']
+export type GitCreateRefRequest =
+  Endpoints['POST /repos/{owner}/{repo}/git/refs']['parameters']
 export interface GitCreateRefResponseData {
   ref: string
   node_id: string
@@ -222,7 +228,8 @@ export interface GitCreateRefResponseData {
   }
 }
 
-export type PullsCreateRequest = Endpoints['POST /repos/{owner}/{repo}/pulls']['parameters']
+export type PullsCreateRequest =
+  Endpoints['POST /repos/{owner}/{repo}/pulls']['parameters']
 
 export interface PullsCreateResponseData {
   url: string
@@ -717,4 +724,5 @@ export interface PullsCreateResponseData {
   changed_files: number
 }
 
-export type PullsCreateResponseData1 = Endpoints['POST /repos/{owner}/{repo}/pulls']['response']
+export type PullsCreateResponseData1 =
+  Endpoints['POST /repos/{owner}/{repo}/pulls']['response']

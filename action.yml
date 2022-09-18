@@ -2,17 +2,41 @@ name: 'Repo File Sync Action For Large GitHub Tree'
 description: 'GitHub Action to Sync Files like Workflows Between Repositories.'
 author: 'JackTn'
 inputs:
-  GH_PAT:
+  OWNER:
+    description: |
+      dest owner
+    required: true
+  REPO:
+    description: |
+      dest REPO
+    required: true
+  BRANCH:
+    description: |
+      dest BRANCH
+    required: true
+  FILE_PATH:
+    description: |
+      dest FILE_PATH
+    required: true
+  GITHUB_TOKEN:
     description: |
       GitHub Personal Access Token to use to get repos and write secrets
-    required: false
-  GH_INSTALLATION_TOKEN:
+    required: true
+  COMMIT_BODY:
     description: |
-      GitHub App Installation Token to used to access repos
+      Commit message body. Will be appended to commit message, separated by two line returns. Defaults to ''
     required: false
-  CONFIG_PATH:
-    description: | 
-      The path for the sync configuration file
+  COMMIT_PREFIX:
+    description: |
+      Prefix for commit message and pull request title. Defaults to 🔄
+    required: false
+  CREATE_TREE_LIMIT:
+    description: |
+      When create tree failed by large trees to build, try to down this limit
+    required: false
+  COMMIT_MESSAGE:
+    description: |
+      Use this commit message instead of the default from commit data.  Defaults to ''
     required: false
   PR_LABELS:
     description: |
@@ -34,63 +58,11 @@ inputs:
     description: |
       Teams to request a review of the pull request from. Defaults to none
     required: false
-  COMMIT_PREFIX:
-    description: |
-      Prefix for commit message and pull request title. Defaults to 🔄
-    required: false
-  COMMIT_BODY:
-    description: |
-      Commit message body. Will be appended to commit message, separated by two line returns. Defaults to ''
-    required: false
-  COMMIT_EACH_FILE:
-    description: |
-      Commit each file seperately. Defaults to true
-    required: false
-  GIT_EMAIL:
-    description: |
-      The e-mail address used to commit the synced files. Defaults to the email of the GitHub PAT
-    required: false
-  GIT_USERNAME:
-    description: |
-      The username used to commit the synced files. Defaults to the username of the GitHub PAT
-    required: false
-  TMP_DIR:
-    description: |
-      The working directory where all sync operations will be done. Defaults to `tmp-${Date.now().toString()}`
-    required: false
-  DRY_RUN:
-    description: |
-      Run everything except for nothing will be updated. Defaults to false
-    required: false
-  SKIP_CLEANUP:
-    description: |
-      Skip removing the temporary directory (useful for debugging). Defaults to false
-    required: false
-  OVERWRITE_EXISTING_PR:
-    description: |
-      Overwrite any existing Sync PR with the new changes. Defaults to true
-    required: false
-  ORIGINAL_MESSAGE:
-    description: |
-      Re-use the original commit message for commits. Works only if the action is triggered by pushing one commit. Defaults to false
-    required: false
-  COMMIT_AS_PR_TITLE:
-    description: |
-      Re-use the commit message as PR title. Works only if ORIGINAL_MESSAGE is on and PR has one commit. Defaults to false
-    required: false
-  SKIP_PR:
-    description: |
-      Skips creating a Pull Request and pushes directly to the default branch. Defaults to false
-    required: false
   BRANCH_PREFIX:
     description: |
       Specify a different prefix for the new branch in the target repo. Defaults to repo-sync/SOURCE_REPO_NAME
     required: false
-  FORK:
-    description: |
-      Specify the user account that will be used in a fork and pull-request workflow. Defaults
-      false.
-    required: false
+
 runs:
   using: 'node12'
   main: 'dist/index.js'

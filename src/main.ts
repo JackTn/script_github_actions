@@ -1,96 +1,103 @@
-import {OctokitResponse} from '@octokit/types'
-import {GitCreateTreeParamsTree, GitGetTreeResponseData} from './types'
-import {base64ToString} from '@azure/openapi-markdown'
 import * as core from '@actions/core'
-import * as github from '@actions/github'
 import * as _ from 'lodash'
-import * as dotenv from 'dotenv'
-dotenv.config()
-
+import * as github from '@actions/github'
+import context from './config'
 import {Git} from './github'
-
-// getChangeFileContent()
-
-// get change files from source reop
-// get Tree from dest repo
-// filter path from dest repo
-// merge changes files and dest repo files
-// create all tree
-// push then create pr
+import {dedent} from './utils'
 
 async function run() {
+  core.info(
+    `GITHUB_TOKEN ${context.GITHUB_TOKEN} ${typeof context.GITHUB_TOKEN}`
+  )
+  core.info(`${JSON.stringify(github.context)}`)
+
+  // local debug mode
+  //   const source = {
+  //     owner: 'local debug owner',
+  //     repo: 'local debug repo',
+  //     branch: 'local debug branch'
+  //   }
+  //   const source = {
+  //     owner: 'JackTn',
+  //     repo: 'script_github_actions',
+  //     branch: 'main'
+  //   }
+
+  // github action mode
+  const {owner, repo} = github.context.repo
+  const refs = github.context.ref
   const source = {
-    owner: 'JackTn',
-    repo: 'azure-rest-api-specs-pr',
-    branch: 'main'
+    owner,
+    repo,
+    branch: refs.split('/')[2]
   }
+
   const dest = {
-    owner: 'JackTn',
-    repo: 'azure-rest-api-specs',
-    branch: 'main'
+    owner: context.OWNER,
+    repo: context.REPO,
+    branch: context.BRANCH
   }
 
-  const filePath = 'specification/common-types'
+  const filePath = context.FILE_PATH
+  const commitMessage = `${context.COMMIT_PREFIX} Synced local '${filePath}'`
+  const GITHUB_REPOSITORY = `${source.owner}/${source.repo}`
+  const branchName = `${context.BRANCH_PREFIX}/${GITHUB_REPOSITORY}/${source.branch}`
+  const pullRequestTitle = `${context.COMMIT_PREFIX} Synced file(s) with ${GITHUB_REPOSITORY}`
 
-  const GITHUB_TOKEN = process.env.SECRET_TOKEN as string
+  const GITHUB_TOKEN = context.GITHUB_TOKEN as string
   const git = new Git(GITHUB_TOKEN)
   const changeFileContent = await git.getChangeFileContent(source, filePath)
+
+  const pullRequestBody =
+    dedent(`Synced local file(s) with [${GITHUB_REPOSITORY}](https://github.com/${GITHUB_REPOSITORY})
+
+                                ---
+
+                                This PR was created automatically and this workflow run [#${
+                                  process.env.GITHUB_RUN_ID || 0
+                                }](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${
+      process.env.GITHUB_RUN_ID || 0
+    })
+
+                                `)
+
+  const isExistingPR = await git.findExistingPr(dest, branchName)
+
   const treeList = await git.getTreeListWithOutPath(dest, filePath)
 
   const newTree = [...changeFileContent, ...treeList]
 
   const createTree = await git.createTreeAll(dest, newTree, 500)
 
-  const createCommit = await git.addCommit(dest, createTree, '测试')
+  const createCommit = await git.addCommit(dest, createTree, commitMessage)
 
-  const branchName = 'testBranch20220913003'
-
-  const newBranch = await git.createBranch(dest, createCommit, branchName)
-
-  if (newBranch.data.url) {
-    console.log('branch has been created')
-  }
-
-  const title = 'test title55'
-  const body = 'test body55'
-
-  const pullRequest = await git.createPullRequest(dest, branchName, title, body)
-
-  // add update pr
-
-  if (pullRequest.data.url) {
-    console.log(`pullRequest has been created ${pullRequest.data.url}`)
+  if (isExistingPR) {
+    await git.updatePullRequest(
+      dest,
+      isExistingPR.number,
+      pullRequestTitle,
+      dedent(`
+        ⚠️ This PR is being automatically resync ⚠️
+        ${pullRequestBody}
+    `),
+      context.PR_LABELS,
+      context.ASSIGNEES,
+      context.REVIEWERS
+    )
+  } else {
+    await git.createBranch(dest, createCommit, branchName)
+    await git.createPullRequest(
+      dest,
+      branchName,
+      pullRequestTitle,
+      pullRequestBody
+    ),
+      context.PR_LABELS,
+      context.ASSIGNEES,
+      context.REVIEWERS
   }
 
   core.info(`Finished`)
 }
 
-// run()
-
-async function testGetInput() {
-  const GIT_EMAIL = core.getInput('GIT_EMAIL')
-  core.info(`GIT_EMAIL ${GIT_EMAIL} ${typeof GIT_EMAIL}`)
-  const ASSIGNEES = core.getInput('ASSIGNEES')
-  core.info(`ASSIGNEES ${ASSIGNEES} ${typeof ASSIGNEES}`)
-  const PR_LABELS = core.getInput('PR_LABELS')
-  core.info(`PR_LABELS ${PR_LABELS} ${typeof PR_LABELS}`)
-
-  const GIT_EMAIL1 = core.getInput('GIT_EMAIL')
-  core.info(`GIT_EMAIL ${GIT_EMAIL} ${typeof GIT_EMAIL1}`)
-  const ASSIGNEES1 = core.getMultilineInput('ASSIGNEES')
-  core.info(`ASSIGNEES1 ${ASSIGNEES[0]} ${typeof ASSIGNEES1}`)
-  core.info(`ASSIGNEES2 ${ASSIGNEES[1]} ${typeof ASSIGNEES1}`)
-  const PR_LABELS1 = core.getBooleanInput('PR_LABELS')
-  core.info(`PR_LABELS ${PR_LABELS1} ${typeof PR_LABELS1}`)
-  //   core.info('\u001b[43mThis background will be yellow')
-  //   core.info('\u001b[1mBold text')
-  //   core.info('\u001b[3mItalic text')
-  //   core.info('\u001b[4mUnderlined text')
-  //   core.error('This is a bad error. This will also fail the build.')
-  //   core.warning(
-  //     "Something went wrong, but it's not bad enough to fail the build."
-  //   )
-  //   core.setFailed('You must provide either GH_PAT or GH_INSTALLATION_TOKEN')
-}
-
-testGetInput()
+run()

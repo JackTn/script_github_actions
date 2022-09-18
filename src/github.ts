@@ -1,60 +1,24 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import * as dotenv from 'dotenv'
 import {Endpoints, OctokitResponse} from '@octokit/types'
 import * as _ from 'lodash'
 import {
-  GitCreateCommitParameters,
-  GitCreateCommitResponseData,
   GitCreateRefRequest,
   GitCreateRefResponseData,
   GitCreateTreeParameters,
   GitCreateTreeParamsTree,
   GitCreateTreeResponseData,
   GitGetTreeParameters,
-  GitGetTreeResponseData,
   GitTree,
-  PullsCreateRequest,
-  PullsCreateResponseData,
-  ReposGetBranchParameters,
-  ReposGetBranchResponseData,
-  ReposGetContentParameters,
-  ReposGetContentResponseData
+  ReposGetBranchParameters
 } from './types'
 import {base64ToString} from '@azure/openapi-markdown'
-
-dotenv.config()
 
 export class Git {
   private github
   constructor(GITHUB_TOKEN: string) {
     const octokit = github.getOctokit(GITHUB_TOKEN)
     this.github = octokit.rest
-  }
-
-  public async coreInfo() {
-    //const {owner, repo} = this.github.context.repo
-    //const payload = this.github.context.payload
-    //const eventName = this.github.context.eventName
-    //const sha = this.github.context.sha
-    //const ref = this.github.context.ref
-    //const action = this.github.context.action
-    //const runNumber = this.github.context.runNumber
-    //const runId = this.github.context.runId
-    //
-    //core.info(`owner ${owner}`)
-    //core.info(`repo ${repo}`)
-    //core.info(`payload ${JSON.stringify(payload)}`)
-    //core.info(`eventName ${eventName}`)
-    //core.info(`sha ${sha}`)
-    //core.info(`ref ${ref}`)
-    //core.info(`action ${action}`)
-    //core.info(`runNumber ${runNumber}`)
-    //core.info(`runId ${runId}`)
-  }
-
-  public async debugInfo() {
-    console.log(this.github)
   }
 
   public async getBranch(getBranchRequest: ReposGetBranchParameters) {
@@ -186,6 +150,7 @@ export class Git {
     console.timeEnd('createTreeAll cost time')
     return tmpTree as OctokitResponse<GitCreateTreeResponseData>
   }
+
   public async getContent(
     getContentRequest: Endpoints['GET /repos/{owner}/{repo}/contents/{path}']['parameters']
   ) {
@@ -271,6 +236,58 @@ export class Git {
     return pullRequest
   }
 
+  public async updatePullRequest(
+    branchRequest: ReposGetBranchParameters,
+    prNumber: number,
+    title: string,
+    body: string,
+    labels?: string[],
+    assignees?: string[],
+    reviewers?: string[]
+  ) {
+    const pullRequest = await this.github.pulls.update({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      pull_number: prNumber,
+      title,
+      body
+    })
+
+    labels &&
+      (await this.github.issues.addLabels({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        issue_number: pullRequest.data.number,
+        labels
+      }))
+    assignees &&
+      (await this.github.issues.addAssignees({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        issue_number: pullRequest.data.number,
+        assignees
+      }))
+
+    reviewers &&
+      (await this.github.pulls.requestReviewers({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        pull_number: pullRequest.data.number,
+        reviewers
+      }))
+
+    return pullRequest
+  }
+
+  public async findExistingPr(
+    branchRequest: ReposGetBranchParameters,
+    newBranch: string
+  ) {
+    const pullRequestList = await this.github.pulls.list({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      state: 'open',
+      head: `${_.pick(branchRequest, ['owner']).owner}:${newBranch}`
+    })
+
+    return pullRequestList.data[0]
+  }
+
   public async getChangeFileContent(
     branchRequest: ReposGetBranchParameters,
     filePath: string
@@ -307,14 +324,13 @@ export class Git {
       })
     )
 
-    const changeFileContent = jsonFilesWithBase64Content.map<
-      GitCreateTreeParamsTree
-    >(file => ({
-      path: file.path,
-      mode: '100644', // git mode for file (blob)
-      type: 'blob',
-      content: base64ToString(file.content)
-    }))
+    const changeFileContent =
+      jsonFilesWithBase64Content.map<GitCreateTreeParamsTree>(file => ({
+        path: file.path,
+        mode: '100644', // git mode for file (blob)
+        type: 'blob',
+        content: base64ToString(file.content)
+      }))
     console.timeEnd(`Get change files content cost time`)
 
     return changeFileContent
