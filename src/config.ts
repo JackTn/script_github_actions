@@ -2,9 +2,8 @@ import * as core from '@actions/core'
 const {getInput} = require('action-input-parser')
 
 type config = {
-  OWNER: string
-  REPO: string
-  BRANCH: string
+  SOURCE: string
+  DEST: string
   FILE_PATH: string
   GITHUB_TOKEN: string
   COMMIT_BODY: string
@@ -23,14 +22,11 @@ let context: config
 
 try {
   context = {
-    OWNER: getInput({
-      key: 'OWNER'
+    SOURCE: getInput({
+      key: 'SOURCE'
     }),
-    REPO: getInput({
-      key: 'REPO'
-    }),
-    BRANCH: getInput({
-      key: 'BRANCH'
+    DEST: getInput({
+      key: 'DEST'
     }),
     FILE_PATH: getInput({
       key: 'FILE_PATH'

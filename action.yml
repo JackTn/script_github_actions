@@ -2,17 +2,13 @@ name: 'Repo File Sync Action For Large GitHub Tree'
 description: 'GitHub Action to Sync Files like Workflows Between Repositories.'
 author: 'JackTn'
 inputs:
-  OWNER:
+  SOURCE:
+    description: |
+      source owner
+    required: true
+  DEST:
     description: |
       dest owner
-    required: true
-  REPO:
-    description: |
-      dest REPO
-    required: true
-  BRANCH:
-    description: |
-      dest BRANCH
     required: true
   FILE_PATH:
     description: |

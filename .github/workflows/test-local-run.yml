@@ -14,8 +14,7 @@
        - name: sync-common-types-files-local
          uses: ./
          with:
-            OWNER: JackTn
-            REPO: script_github_actions-pr
-            BRANCH: main
+            SOURCE: JackTn/script_github_actions@main
+            DEST: JackTn/script_github_actions-pr@main
             FILE_PATH: specification/common-types
-            GITHUB_TOKEN: ???????
+            GITHUB_TOKEN: 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

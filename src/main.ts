@@ -4,6 +4,7 @@ import * as github from '@actions/github'
 import context from './config'
 import {Git} from './github'
 import {dedent} from './utils'
+import {ReposGetBranchParameters} from './types'
 
 async function run() {
   core.info(
@@ -11,32 +12,27 @@ async function run() {
   )
   core.info(`${JSON.stringify(github.context)}`)
 
-  // local debug mode
-  //   const source = {
-  //     owner: 'local debug owner',
-  //     repo: 'local debug repo',
-  //     branch: 'local debug branch'
-  //   }
-  //   const source = {
-  //     owner: 'JackTn',
-  //     repo: 'script_github_actions',
-  //     branch: 'main'
-  //   }
+  // JackTn/script_github_actions@main
+  const regExp = /([^\/)]*)\/([^@]*)@(.*)/
+  const sourceList = regExp.exec(context.SOURCE)
+  const destList = regExp.exec(context.DEST)
 
-  // github action mode
-  const {owner, repo} = github.context.repo
-  const refs = github.context.ref
-  const source = {
-    owner,
-    repo,
-    branch: refs.split('/')[2]
+  if (!destList && !sourceList) {
+    core.warning(`input is missing correct`)
+    process.exit(1)
   }
+
+  const source = {
+    owner: sourceList && (sourceList[1] as string),
+    repo: sourceList && (sourceList[2] as string),
+    branch: sourceList && (sourceList[3] as string)
+  } as ReposGetBranchParameters
 
   const dest = {
-    owner: context.OWNER,
-    repo: context.REPO,
-    branch: context.BRANCH
-  }
+    owner: destList && destList[1],
+    repo: destList && destList[2],
+    branch: destList && destList[3]
+  } as ReposGetBranchParameters
 
   const filePath = context.FILE_PATH
   const commitMessage = `${context.COMMIT_PREFIX} Synced local '${filePath}'`

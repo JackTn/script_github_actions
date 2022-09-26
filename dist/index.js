@@ -35,14 +35,11 @@ const { getInput } = __nccwpck_require__(4623);
 let context;
 try {
     context = {
-        OWNER: getInput({
-            key: 'OWNER'
+        SOURCE: getInput({
+            key: 'SOURCE'
         }),
-        REPO: getInput({
-            key: 'REPO'
-        }),
-        BRANCH: getInput({
-            key: 'BRANCH'
+        DEST: getInput({
+            key: 'DEST'
         }),
         FILE_PATH: getInput({
             key: 'FILE_PATH'
@@ -414,29 +411,23 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`GITHUB_TOKEN ${config_1.default.GITHUB_TOKEN} ${typeof config_1.default.GITHUB_TOKEN}`);
         core.info(`${JSON.stringify(github.context)}`);
-        // local debug mode
-        //   const source = {
-        //     owner: 'local debug owner',
-        //     repo: 'local debug repo',
-        //     branch: 'local debug branch'
-        //   }
-        //   const source = {
-        //     owner: 'JackTn',
-        //     repo: 'script_github_actions',
-        //     branch: 'main'
-        //   }
-        // github action mode
-        const { owner, repo } = github.context.repo;
-        const refs = github.context.ref;
+        // JackTn/script_github_actions@main
+        const regExp = /([^\/)]*)\/([^@]*)@(.*)/;
+        const sourceList = regExp.exec(config_1.default.SOURCE);
+        const destList = regExp.exec(config_1.default.DEST);
+        if (!destList && !sourceList) {
+            core.warning(`input is missing correct`);
+            process.exit(1);
+        }
         const source = {
-            owner,
-            repo,
-            branch: refs.split('/')[2]
+            owner: sourceList && sourceList[1],
+            repo: sourceList && sourceList[2],
+            branch: sourceList && sourceList[3]
         };
         const dest = {
-            owner: config_1.default.OWNER,
-            repo: config_1.default.REPO,
-            branch: config_1.default.BRANCH
+            owner: destList && destList[1],
+            repo: destList && destList[2],
+            branch: destList && destList[3]
         };
         const filePath = config_1.default.FILE_PATH;
         const commitMessage = `${config_1.default.COMMIT_PREFIX} Synced local '${filePath}'`;
