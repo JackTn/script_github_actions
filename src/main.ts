@@ -37,7 +37,7 @@ async function run() {
   const filePath = context.FILE_PATH
   const commitMessage = `${context.COMMIT_PREFIX} Synced local '${filePath}'`
   const GITHUB_REPOSITORY = `${source.owner}/${source.repo}`
-  const branchName = `${context.BRANCH_PREFIX}/${GITHUB_REPOSITORY}/${source.branch}`
+  const branchName = `${context.BRANCH_PREFIX}/${dest.owner}/${dest.repo}/${dest.branch}`
   const pullRequestTitle = `${context.COMMIT_PREFIX} Synced file(s) with ${GITHUB_REPOSITORY}`
 
   const GITHUB_TOKEN = context.GITHUB_TOKEN as string
