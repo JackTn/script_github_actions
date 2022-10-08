@@ -411,11 +411,13 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`GITHUB_TOKEN ${config_1.default.GITHUB_TOKEN} ${typeof config_1.default.GITHUB_TOKEN}`);
         core.info(`${JSON.stringify(github.context)}`);
+        core.info(`This trigger branch is ${github.context.payload.repository &&
+            github.context.payload.repository.private}`);
         // JackTn/script_github_actions@main
         const regExp = /([^\/)]*)\/([^@]*)@(.*)/;
         const sourceList = regExp.exec(config_1.default.SOURCE);
         const destList = regExp.exec(config_1.default.DEST);
-        if (!destList && !sourceList) {
+        if (!destList || !sourceList) {
             core.warning(`input is missing correct`);
             process.exit(1);
         }

@@ -12,12 +12,19 @@ async function run() {
   )
   core.info(`${JSON.stringify(github.context)}`)
 
+  core.info(
+    `This trigger branch is ${
+      github.context.payload.repository &&
+      github.context.payload.repository.private
+    }`
+  )
+
   // JackTn/script_github_actions@main
   const regExp = /([^\/)]*)\/([^@]*)@(.*)/
   const sourceList = regExp.exec(context.SOURCE)
   const destList = regExp.exec(context.DEST)
 
-  if (!destList && !sourceList) {
+  if (!destList || !sourceList) {
     core.warning(`input is missing correct`)
     process.exit(1)
   }

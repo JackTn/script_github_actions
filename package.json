@@ -11,7 +11,7 @@
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
-    "release": "ncc build",
+    "release": "npm run build && npm run format && ncc build",
     "package": "ncc build --source-map --license licenses.txt",
     "all": "npm run build && npm run format && npm run package"
   },
