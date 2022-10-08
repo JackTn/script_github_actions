@@ -4,8 +4,10 @@
      branches: [main]
      paths: 
        - 'specification/common-types/**'
+   schedule:
+       - cron: '*/5 * * * *'
  jobs:
-   Explore-GitHub-Actions1:
+   Explore-GitHub-Actions:
      runs-on: ubuntu-latest
      steps:
        - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
