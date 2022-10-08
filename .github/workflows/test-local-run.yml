@@ -6,8 +6,8 @@
      paths: 
        - 'specification/common-types/**'
  jobs:
-   Explore-GitHub-Actions34:
-     name: sync-common-types-files-1
+   test-sync-files:
+     name: test-sync-files
      runs-on: ubuntu-latest
      steps:
        - uses: actions/checkout@v2
@@ -17,4 +17,4 @@
             SOURCE: JackTn/script_github_actions@main
             DEST: JackTn/script_github_actions-pr@main
             FILE_PATH: specification/common-types
-            GITHUB_TOKEN: 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
+            GITHUB_TOKEN: 123123
