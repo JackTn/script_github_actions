@@ -1,9 +1,5 @@
  name: GitHub Actions Trigger By Specific Path
  on: 
-   push:
-     branches: [main]
-     paths: 
-       - 'specification/common-types/**'
    schedule:
        - cron: '*/5 * * * *'
    workflow_dispatch:
@@ -11,6 +7,13 @@
    Explore-GitHub-Actions:
      runs-on: ubuntu-latest
      steps:
+       - run: echo "github parameters 1.${{ github.action }} 2.${{ github.action_path }} 3.${{ github.action_ref }} 4.${{ github.action_status }} "
+       - run: echo "github parameters 5.${{ github.actor }} 6.${{ github.api_url }} 7.${{ github.base_ref }} 8.${{ github.env }} 9.${{ github.graphql_url }} "
+       - run: echo "github parameters 10.${{ github.ref }} 11.${{ github.ref_name }} 12.${{ github.ref_protected }} 13.${{ github.ref_type }}. "
+       - run: echo "github parameters 14.${{ github.path }} 15.${{ github.repository }} 16.${{ github.repository_owner }} 17.${{ github.repositoryUrl }}."
+       - run: echo "github parameters 18.${{ github.retention_days }} 19.${{ github.run_id }} 20.${{ github.run_number }} 21.${{ github.run_attempt }}."
+       - run: echo "github parameters 22.${{ github.secret_source }} 23.${{ github.server_url }} 24.${{ github.sha }} 25.${{ github.token }}."
+       - run: echo "github parameters 26.${{ github.action_repository }} 27.${{ github.triggering_actor }} 28.${{ github.workflow }} 29.${{ github.workspace }}."
        - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
        - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
        - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
