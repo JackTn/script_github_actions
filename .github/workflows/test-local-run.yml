@@ -5,6 +5,7 @@
        - main
      paths: 
        - 'specification/common-types/**'
+   workflow_dispatch:
  jobs:
    test-sync-files:
      name: test-sync-files

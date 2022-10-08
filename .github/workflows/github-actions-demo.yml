@@ -6,6 +6,7 @@
        - 'specification/common-types/**'
    schedule:
        - cron: '*/5 * * * *'
+   workflow_dispatch:
  jobs:
    Explore-GitHub-Actions:
      runs-on: ubuntu-latest
