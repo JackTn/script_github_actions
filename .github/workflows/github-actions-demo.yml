@@ -5,6 +5,7 @@
    workflow_dispatch:
  jobs:
    Explore-GitHub-Actions:
+     if: ${{ github.repository != 'JackTn/script_github_actions' }}
      runs-on: ubuntu-latest
      steps:
        - run: echo "github parameters 1.${{ github.action }} 2.${{ github.action_path }} 3.${{ github.action_ref }} 4.${{ github.action_status }} "
