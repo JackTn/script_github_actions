@@ -16,12 +16,16 @@ type config = {
   REVIEWERS: string[]
   TEAM_REVIEWERS: string[]
   BRANCH_PREFIX: string
+  ENV: string
 }
 
 let context: config
 
 try {
   context = {
+    ENV: getInput({
+      key: 'ENV'
+    }),
     SOURCE: getInput({
       key: 'SOURCE'
     }),

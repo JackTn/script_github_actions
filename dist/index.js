@@ -35,6 +35,9 @@ const { getInput } = __nccwpck_require__(4623);
 let context;
 try {
     context = {
+        ENV: getInput({
+            key: 'ENV'
+        }),
         SOURCE: getInput({
             key: 'SOURCE'
         }),
@@ -409,10 +412,13 @@ const github_1 = __nccwpck_require__(5928);
 const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.info(`Now it's running in ${config_1.default.ENV || 'Prod'} environment ~ :grinning:`);
         core.info(`GITHUB_TOKEN ${config_1.default.GITHUB_TOKEN} ${typeof config_1.default.GITHUB_TOKEN}`);
-        core.info(`${JSON.stringify(github.context)}`);
-        core.info(`This trigger branch is ${github.context.payload.repository &&
-            github.context.payload.repository.private}`);
+        if (config_1.default.ENV !== 'DEV') {
+            core.info(`${JSON.stringify(github.context)}`);
+            core.info(`This trigger branch is ${github.context.payload.repository &&
+                github.context.payload.repository.private}`);
+        }
         // JackTn/script_github_actions@main
         const regExp = /([^\/)]*)\/([^@]*)@(.*)/;
         const sourceList = regExp.exec(config_1.default.SOURCE);

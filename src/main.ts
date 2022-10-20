@@ -8,16 +8,22 @@ import {ReposGetBranchParameters} from './types'
 
 async function run() {
   core.info(
-    `GITHUB_TOKEN ${context.GITHUB_TOKEN} ${typeof context.GITHUB_TOKEN}`
+    `Now it's running in ${context.ENV || 'Prod'} environment ~ 😊`
   )
-  core.info(`${JSON.stringify(github.context)}`)
-
+  console.log('123123')
   core.info(
-    `This trigger branch is ${
-      github.context.payload.repository &&
-      github.context.payload.repository.private
-    }`
+    `GITHUB_TOKEN ${context.GITHUB_TOKEN}`
   )
+  if (context.ENV !== 'DEV') {
+    core.info(`${JSON.stringify(github.context)}`)
+
+    core.info(
+      `This trigger branch is ${
+        github.context.payload.repository &&
+        github.context.payload.repository.private
+      }`
+    )
+  }
 
   // JackTn/script_github_actions@main
   const regExp = /([^\/)]*)\/([^@]*)@(.*)/
