@@ -51,14 +51,14 @@ async function run() {
   const commitMessage = `${context.COMMIT_PREFIX} Synced local '${filePath}'`
   const GITHUB_REPOSITORY = `${source.owner}/${source.repo}`
   const branchName = `${context.BRANCH_PREFIX}/${dest.owner}/${dest.repo}/${dest.branch}`
-  const pullRequestTitle = `${context.COMMIT_PREFIX} Synced file(s) with ${GITHUB_REPOSITORY}`
+  const pullRequestTitle = `${context.COMMIT_PREFIX} Sync from ${source.branch} branch`
 
   const GITHUB_TOKEN = context.GITHUB_TOKEN as string
   const git = new Git(GITHUB_TOKEN)
   const changeFileContent = await git.getChangeFileContent(source, filePath)
 
   const pullRequestBody =
-    dedent(`Synced local file(s) with [${GITHUB_REPOSITORY}](https://github.com/${GITHUB_REPOSITORY})
+    dedent(`This pr synced the latest changes of ${filePath} from ${source.branch} branch
 
                                 ---
 
@@ -70,8 +70,6 @@ async function run() {
 
                                 `)
 
-  const isExistingPR = await git.findExistingPr(dest, branchName)
-
   const treeList = await git.getTreeListWithOutPath(dest, filePath)
 
   const newTree = [...changeFileContent, ...treeList]
@@ -79,6 +77,9 @@ async function run() {
   const createTree = await git.createTreeAll(dest, newTree, 500)
 
   const createCommit = await git.addCommit(dest, createTree, commitMessage)
+
+  // 判断是否存在branch
+  const isExistingPR = await git.findExistingPr(dest, branchName)
 
   if (isExistingPR) {
     await git.updatePullRequest(

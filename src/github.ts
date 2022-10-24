@@ -196,6 +196,14 @@ export class Git {
     })
   }
 
+  public async isBranchExist(
+    branchRequest: ReposGetBranchParameters
+  ) {
+    // const pullRequestList = await this.github.repos.branch(branchRequest)
+
+    // return pullRequestList.data[0]
+  }
+
   public async pullRequestAdd(
     branchRequest: ReposGetBranchParameters,
     pullRequest: Endpoints['POST /repos/{owner}/{repo}/pulls']['response'],
