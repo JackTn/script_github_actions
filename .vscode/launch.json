@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "run github action",
             "skipFiles": [],
             "program": "${workspaceFolder}/src/main.ts",
             "sourceMaps": true,

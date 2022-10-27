@@ -36,7 +36,8 @@ try {
       key: 'FILE_PATH'
     }),
     GITHUB_TOKEN: getInput({
-      key: 'GITHUB_TOKEN'
+      key: 'GITHUB_TOKEN',
+      required: true
     }),
     COMMIT_BODY: getInput({
       key: 'COMMIT_BODY',
@@ -83,6 +84,8 @@ try {
   }
 
   core.setSecret(context.GITHUB_TOKEN)
+
+  console.log('context', context)
 
   core.debug(JSON.stringify(context, null, 2))
 } catch (err) {

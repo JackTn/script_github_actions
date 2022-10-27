@@ -197,11 +197,15 @@ export class Git {
   }
 
   public async isBranchExist(
-    branchRequest: ReposGetBranchParameters
+    branchRequest: ReposGetBranchParameters,
+    newBranchName: string
   ) {
-    // const pullRequestList = await this.github.repos.branch(branchRequest)
+    const pullRequestList = await this.github.repos.getBranch({
+      ..._.pick(branchRequest, ['owner', 'repo']),
+      branch: newBranchName
+    })
 
-    // return pullRequestList.data[0]
+    return pullRequestList
   }
 
   public async pullRequestAdd(

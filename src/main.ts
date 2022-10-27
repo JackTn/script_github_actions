@@ -6,14 +6,14 @@ import {Git} from './github'
 import {dedent} from './utils'
 import {ReposGetBranchParameters} from './types'
 
+core.info(`Now it's running in ${context.ENV || 'Prod'} environment ~ 😊`)
+core.info(`GITHUB_TOKEN ${context.GITHUB_TOKEN}`)
+
 async function run() {
-  core.info(
-    `Now it's running in ${context.ENV || 'Prod'} environment ~ 😊`
-  )
+  core.info(`Now it's running in ${context.ENV || 'Prod'} environment ~ 😊`)
+  core.info(`GITHUB_TOKEN ${context.GITHUB_TOKEN}`)
   console.log('123123')
-  core.info(
-    `GITHUB_TOKEN ${context.GITHUB_TOKEN}`
-  )
+  console.log('context', context)
   if (context.ENV !== 'DEV') {
     core.info(`${JSON.stringify(github.context)}`)
 
@@ -57,8 +57,15 @@ async function run() {
   const git = new Git(GITHUB_TOKEN)
   const changeFileContent = await git.getChangeFileContent(source, filePath)
 
+  // 判断是否存在branch
+  const isExistingBranch = await git.isBranchExist(dest, branchName)
+
+  console.log('isExistingBranch', isExistingBranch)
+
   const pullRequestBody =
-    dedent(`This pr synced the latest changes of ${filePath} from ${source.branch} branch
+    dedent(`This pr synced the latest changes of ${filePath} from ${
+      source.branch
+    } branch
 
                                 ---
 
@@ -119,4 +126,4 @@ async function run() {
   core.info(`Finished`)
 }
 
-run()
+// run()
