@@ -6,27 +6,11 @@ import {Git} from './github'
 import {dedent} from './utils'
 import {ReposGetBranchParameters} from './types'
 
-core.info(`Now it's running in ${context.ENV || 'Prod'} environment ~ 😊`)
-core.info(`GITHUB_TOKEN ${context.GITHUB_TOKEN}`)
-
 async function run() {
-  core.info(`Now it's running in ${context.ENV || 'Prod'} environment ~ 😊`)
-  core.info(`GITHUB_TOKEN ${context.GITHUB_TOKEN}`)
-  console.log('123123')
-  console.log('context', context)
-  if (context.ENV !== 'DEV') {
-    core.info(`${JSON.stringify(github.context)}`)
+  core.info(`Now it's running ~ 😊`)
 
-    core.info(
-      `This trigger branch is ${
-        github.context.payload.repository &&
-        github.context.payload.repository.private
-      }`
-    )
-  }
-
-  // JackTn/script_github_actions@main
   const regExp = /([^\/)]*)\/([^@]*)@(.*)/
+
   const sourceList = regExp.exec(context.SOURCE)
   const destList = regExp.exec(context.DEST)
 
@@ -52,16 +36,6 @@ async function run() {
   const GITHUB_REPOSITORY = `${source.owner}/${source.repo}`
   const branchName = `${context.BRANCH_PREFIX}/${dest.owner}/${dest.repo}/${dest.branch}`
   const pullRequestTitle = `${context.COMMIT_PREFIX} Sync from ${source.branch} branch`
-
-  const GITHUB_TOKEN = context.GITHUB_TOKEN as string
-  const git = new Git(GITHUB_TOKEN)
-  const changeFileContent = await git.getChangeFileContent(source, filePath)
-
-  // 判断是否存在branch
-  const isExistingBranch = await git.isBranchExist(dest, branchName)
-
-  console.log('isExistingBranch', isExistingBranch)
-
   const pullRequestBody =
     dedent(`This pr synced the latest changes of ${filePath} from ${
       source.branch
@@ -76,16 +50,29 @@ async function run() {
     })
 
                                 `)
+  core.info(
+    `will create pull request by ${branchName} in ${dest.owner}/${dest.repo} from ${GITHUB_REPOSITORY}`
+  )
+
+  const GITHUB_TOKEN = context.GITHUB_TOKEN as string
+  const git = new Git(GITHUB_TOKEN)
+
+  const changeFileContent = await git.getChangeFileContent(source, filePath)
 
   const treeList = await git.getTreeListWithOutPath(dest, filePath)
 
   const newTree = [...changeFileContent, ...treeList]
 
-  const createTree = await git.createTreeAll(dest, newTree, 500)
+  const createTree = await git.createTreeAll(
+    dest,
+    newTree,
+    context.CREATE_TREE_LIMIT
+  )
 
   const createCommit = await git.addCommit(dest, createTree, commitMessage)
 
-  // 判断是否存在branch
+  await git.createOrUpdateBranch(dest, createCommit, branchName)
+
   const isExistingPR = await git.findExistingPr(dest, branchName)
 
   if (isExistingPR) {
@@ -107,7 +94,6 @@ async function run() {
       `Pull Request #${isExistingPR.number} updated: ${isExistingPR.html_url}`
     )
   } else {
-    await git.createBranch(dest, createCommit, branchName)
     const pullRequest = await git.createPullRequest(
       dest,
       branchName,
@@ -126,4 +112,4 @@ async function run() {
   core.info(`Finished`)
 }
 
-// run()
+run()

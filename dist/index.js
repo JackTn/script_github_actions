@@ -1,4 +1,4 @@
-require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
+/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 88:
@@ -35,9 +35,6 @@ const { getInput } = __nccwpck_require__(4623);
 let context;
 try {
     context = {
-        ENV: getInput({
-            key: 'ENV'
-        }),
         SOURCE: getInput({
             key: 'SOURCE'
         }),
@@ -266,15 +263,34 @@ class Git {
             return yield this.github.git.createRef(createRefRequest);
         });
     }
-    createBranch(branchRequest, commitResult, newBranch) {
+    createOrUpdateBranch(branchRequest, commitResult, newBranch) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.github.git.createRef(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { ref: `refs/heads/${newBranch}`, sha: commitResult.data.sha }));
+            const isExistingBranch = yield this.isBranchExist(branchRequest, newBranch);
+            if (isExistingBranch) {
+                core.info(`branch has been update successfully`);
+                try {
+                    yield this.github.repos.merge(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { base: newBranch, head: commitResult.data.sha, commit_message: 'Update branch' }));
+                }
+                catch (error) {
+                    core.warning(`${error}`);
+                }
+            }
+            else {
+                core.info(`branch has been created successfully`);
+                yield this.github.git.createRef(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { ref: `refs/heads/${newBranch}`, sha: commitResult.data.sha }));
+            }
         });
     }
     isBranchExist(branchRequest, newBranchName) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pullRequestList = yield this.github.repos.getBranch(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { branch: newBranchName }));
-            return pullRequestList;
+            try {
+                const branch = yield this.github.repos.getBranch(Object.assign(Object.assign({}, _.pick(branchRequest, ['owner', 'repo'])), { branch: newBranchName }));
+                return branch;
+            }
+            catch (error) {
+                core.error(error);
+                return false;
+            }
         });
     }
     pullRequestAdd(branchRequest, pullRequest, labels, assignees, reviewers, teamReviewers) {
@@ -414,24 +430,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
 const config_1 = __importDefault(__nccwpck_require__(88));
 const github_1 = __nccwpck_require__(5928);
 const utils_1 = __nccwpck_require__(918);
-core.info(`Now it's running in ${config_1.default.ENV || 'Prod'} environment ~ 😊`);
-core.info(`GITHUB_TOKEN ${config_1.default.GITHUB_TOKEN}`);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`Now it's running in ${config_1.default.ENV || 'Prod'} environment ~ 😊`);
-        core.info(`GITHUB_TOKEN ${config_1.default.GITHUB_TOKEN}`);
-        console.log('123123');
-        console.log('context', config_1.default);
-        if (config_1.default.ENV !== 'DEV') {
-            core.info(`${JSON.stringify(github.context)}`);
-            core.info(`This trigger branch is ${github.context.payload.repository &&
-                github.context.payload.repository.private}`);
-        }
-        // JackTn/script_github_actions@main
+        core.info(`Now it's running ~ 😊`);
         const regExp = /([^\/)]*)\/([^@]*)@(.*)/;
         const sourceList = regExp.exec(config_1.default.SOURCE);
         const destList = regExp.exec(config_1.default.DEST);
@@ -454,12 +458,6 @@ function run() {
         const GITHUB_REPOSITORY = `${source.owner}/${source.repo}`;
         const branchName = `${config_1.default.BRANCH_PREFIX}/${dest.owner}/${dest.repo}/${dest.branch}`;
         const pullRequestTitle = `${config_1.default.COMMIT_PREFIX} Sync from ${source.branch} branch`;
-        const GITHUB_TOKEN = config_1.default.GITHUB_TOKEN;
-        const git = new github_1.Git(GITHUB_TOKEN);
-        const changeFileContent = yield git.getChangeFileContent(source, filePath);
-        // 判断是否存在branch
-        const isExistingBranch = yield git.isBranchExist(dest, branchName);
-        console.log('isExistingBranch', isExistingBranch);
         const pullRequestBody = (0, utils_1.dedent)(`This pr synced the latest changes of ${filePath} from ${source.branch} branch
 
                                 ---
@@ -467,11 +465,15 @@ function run() {
                                 This PR was created automatically and this workflow run [#${process.env.GITHUB_RUN_ID || 0}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID || 0})
 
                                 `);
+        core.info(`will create pull request by ${branchName} in ${dest.owner}/${dest.repo} from ${GITHUB_REPOSITORY}`);
+        const GITHUB_TOKEN = config_1.default.GITHUB_TOKEN;
+        const git = new github_1.Git(GITHUB_TOKEN);
+        const changeFileContent = yield git.getChangeFileContent(source, filePath);
         const treeList = yield git.getTreeListWithOutPath(dest, filePath);
         const newTree = [...changeFileContent, ...treeList];
-        const createTree = yield git.createTreeAll(dest, newTree, 500);
+        const createTree = yield git.createTreeAll(dest, newTree, config_1.default.CREATE_TREE_LIMIT);
         const createCommit = yield git.addCommit(dest, createTree, commitMessage);
-        // 判断是否存在branch
+        yield git.createOrUpdateBranch(dest, createCommit, branchName);
         const isExistingPR = yield git.findExistingPr(dest, branchName);
         if (isExistingPR) {
             yield git.updatePullRequest(dest, isExistingPR.number, pullRequestTitle, (0, utils_1.dedent)(`
@@ -481,14 +483,13 @@ function run() {
             core.notice(`Pull Request #${isExistingPR.number} updated: ${isExistingPR.html_url}`);
         }
         else {
-            yield git.createBranch(dest, createCommit, branchName);
             const pullRequest = yield git.createPullRequest(dest, branchName, pullRequestTitle, pullRequestBody, config_1.default.PR_LABELS, config_1.default.ASSIGNEES, config_1.default.REVIEWERS, config_1.default.TEAM_REVIEWERS);
             core.notice(`Pull Request #${pullRequest.data.number} created: ${pullRequest.data.html_url}`);
         }
         core.info(`Finished`);
     });
 }
-// run()
+run();
 //# sourceMappingURL=main.js.map
 
 /***/ }),
@@ -41434,4 +41435,3 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=index.js.map

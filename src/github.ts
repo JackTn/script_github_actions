@@ -184,28 +184,48 @@ export class Git {
     return await this.github.git.createRef(createRefRequest)
   }
 
-  public async createBranch(
+  public async createOrUpdateBranch(
     branchRequest: ReposGetBranchParameters,
     commitResult: Endpoints['POST /repos/{owner}/{repo}/git/commits']['response'],
     newBranch: string
-  ): Promise<OctokitResponse<GitCreateRefResponseData>> {
-    return await this.github.git.createRef({
-      ..._.pick(branchRequest, ['owner', 'repo']),
-      ref: `refs/heads/${newBranch}`,
-      sha: commitResult.data.sha
-    })
+  ) {
+    const isExistingBranch = await this.isBranchExist(branchRequest, newBranch)
+    if (isExistingBranch) {
+      core.info(`branch has been update successfully`)
+      try {
+        await this.github.repos.merge({
+          ..._.pick(branchRequest, ['owner', 'repo']),
+          base: newBranch,
+          head: commitResult.data.sha,
+          commit_message: 'Update branch'
+        })
+      } catch (error) {
+        core.warning(`${error}`)
+      }
+    } else {
+      core.info(`branch has been created successfully`)
+      await this.github.git.createRef({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        ref: `refs/heads/${newBranch}`,
+        sha: commitResult.data.sha
+      })
+    }
   }
 
   public async isBranchExist(
     branchRequest: ReposGetBranchParameters,
     newBranchName: string
   ) {
-    const pullRequestList = await this.github.repos.getBranch({
-      ..._.pick(branchRequest, ['owner', 'repo']),
-      branch: newBranchName
-    })
-
-    return pullRequestList
+    try {
+      const branch = await this.github.repos.getBranch({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        branch: newBranchName
+      })
+      return branch
+    } catch (error) {
+      core.error(error as Error)
+      return false
+    }
   }
 
   public async pullRequestAdd(
