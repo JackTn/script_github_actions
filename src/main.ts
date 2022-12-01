@@ -81,7 +81,7 @@ async function run() {
       isExistingPR.number,
       pullRequestTitle,
       dedent(`
-        ⚠️ This PR is being automatically resync ⚠️
+        ⚠️ This PR was created automatically ⚠️
         ${pullRequestBody}
     `),
       context.PR_LABELS,

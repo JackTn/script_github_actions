@@ -223,7 +223,7 @@ export class Git {
       })
       return branch
     } catch (error) {
-      core.error(error as Error)
+      core.info(`${error}`)
       return false
     }
   }
@@ -336,13 +336,17 @@ export class Git {
     branchRequest: ReposGetBranchParameters,
     newBranch: string
   ) {
-    const pullRequestList = await this.github.pulls.list({
-      ..._.pick(branchRequest, ['owner', 'repo']),
-      state: 'open',
-      head: `${_.pick(branchRequest, ['owner']).owner}:${newBranch}`
-    })
-
-    return pullRequestList.data[0]
+    try {
+      const pullRequestList = await this.github.pulls.list({
+        ..._.pick(branchRequest, ['owner', 'repo']),
+        state: 'open',
+        head: `${_.pick(branchRequest, ['owner']).owner}:${newBranch}`
+      })
+      return pullRequestList.data[0]
+    } catch (error) {
+      core.info(`${error}`)
+      return false
+    }
   }
 
   public async getChangeFileContent(
