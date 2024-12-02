@@ -1,0 +1,12 @@
+{
+    "suppressions": {
+      "azure-sdk-for-js": [
+        {
+          "breaking-changes": [
+            "Operation VirtualMachineInstances.beginStop has a new signature",
+            "Operation VirtualMachineInstances.beginStopAndWait has a new signature"
+          ]
+        }
+      ]
+    }
+}

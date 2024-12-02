@@ -1,0 +1,114 @@
+name: Run JavaScript Script
+
+on:
+  pull_request:
+    branches:
+      - main 
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: windows-latest
+    env:
+      SCRIPT_DIR: ./eng/scripts/ValidateYaml
+      TEMP_PATH: ./temp-output.txt
+    # strategy:
+    #   matrix:
+    #     file: ["file1.txt", "file2.txt"]
+
+    steps:
+      # - name: Install PowerShell
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y wget apt-transport-https software-properties-common
+      #     wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
+      #     sudo dpkg -i packages-microsoft-prod.deb
+      #     sudo apt-get update
+      #     sudo apt-get install -y powershell
+
+      # - name: Set directory path variable
+      #   id: set_vars
+      #   run: |
+      #     echo "SCRIPT_DIR=./eng/scripts/ValidateYaml" >> $GITHUB_ENV
+      #     echo "TEMP_PATH=temp-output.txt" >> $GITHUB_ENV
+          
+      - name: Run PowerShell script
+        run: |
+          Write-Output "Running PowerShell!"
+          $PSVersionTable
+        shell: pwsh
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Write to a temporary file with PowerShell
+        shell: pwsh
+        run: |
+          # $tempPath = "temp-output.txt"
+          # "Hello from a file!" | Out-File -FilePath $env:tempPath -Encoding utf8
+          # $tempPath = "temp-output.txt"
+          ./eng/scripts/test-output.ps1 -tempPath $env:TEMP_PATH
+
+      - name: Read from the temporary file with PowerShell
+        shell: pwsh
+        run: |
+          # $tempPath = "temp-output.txt"
+          $content = Get-Content -Path $env:TEMP_PATH
+          Write-Output "Content from file: $content"
+
+      - name: 在读取之前检查文件是否存在1111
+        run: |
+          ls -l temp-output.txt
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 在读取之前检查文件是否存在222
+        run: |
+          ls -l temp-output.txt
+
+      - name: 打印当前路径111
+        run: |
+          echo "当前路径: $(pwd)"
+
+      - name: Install Dependencies
+        run: |
+          if [ -f $SCRIPT_DIR/package.json ]; then
+            echo "Found package.json in $SCRIPT_DIR. Running npm install..."
+            cd $SCRIPT_DIR
+            npm install
+          else
+            echo "package.json not found in $SCRIPT_DIR. Skipping npm install."
+          fi
+
+      - name: 打印当前路径222
+        run: |
+          echo "当前路径: $(pwd)"
+      - name: 在读取之前检查文件是否存在333
+        run: |
+          ls -l temp-output.txt
+
+      - name: 打印当前路径333
+        run: |
+          echo "当前路径: $(pwd)"
+      - name: Run Script
+        run: |
+          echo "$TEMP_PATH"
+          if [ -f $SCRIPT_DIR/validateYaml.js ]; then
+            node ./$SCRIPT_DIR/validateYaml.js $TEMP_PATH
+          else
+            echo "validateYaml.js not found in $SCRIPT_DIR. Exiting."
+            exit 1
+          fi
+        working-directory: ./
+
+      - name: 打印当前路径444
+        run: |
+          echo "当前路径: $(pwd)"

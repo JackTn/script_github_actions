@@ -1,3 +1,6 @@
+# github-action for validate yaml structor
+
+
 # github-action for repo file sync 
 
 ### workflow

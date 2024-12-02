@@ -99,3 +99,7 @@ __tests__/runner/*
 lib/**/*
 
 .idea/
+
+eng/tools/**/dist
+!eng/tools/**/cmd/*.js
+!eng/tools/**/eslint.config.js
