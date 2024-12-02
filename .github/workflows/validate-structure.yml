@@ -79,6 +79,7 @@ jobs:
           echo "当前路径: $(pwd)"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           if [ -f $SCRIPT_DIR/package.json ]; then
             echo "Found package.json in $SCRIPT_DIR. Running npm install..."
@@ -99,6 +100,7 @@ jobs:
         run: |
           echo "当前路径: $(pwd)"
       - name: Run Script
+        shell: bash
         run: |
           echo "$TEMP_PATH"
           if [ -f $SCRIPT_DIR/validateYaml.js ]; then
