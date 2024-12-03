@@ -103,3 +103,5 @@ lib/**/*
 eng/tools/**/dist
 !eng/tools/**/cmd/*.js
 !eng/tools/**/eslint.config.js
+
+package-lock.json

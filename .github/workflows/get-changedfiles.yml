@@ -1,4 +1,4 @@
-name: Run JavaScript Script
+name: Run get pr changefiles by ps script
 
 on:
   pull_request:
@@ -28,7 +28,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Read from the temporary file with PowerShell
+      - name: get pr changefiles
         shell: pwsh
         run: |
           Write-Output "Reading from the temporary file! ${{ env.SYSTEM_PULLREQUEST_SOURCECOMMITID }}"
